@@ -6,9 +6,13 @@
 #include <vector>
 #include <list>
 
+#include "./ObjectInterface.cpp"
+
+
+
 using namespace std;
 
-class EvansMap {
+class EvansMap : public ObjectInterface {
 public:
     EvansMap(int size) {
         table.resize(size);
@@ -87,6 +91,7 @@ private:
     }
 
     bool insert(int key, string value, List* list) {
+
         // Lock the mutex
         pthread_mutex_lock(&list->mutex);
         Node* node = new Node(key, value);
