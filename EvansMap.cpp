@@ -4,11 +4,7 @@
 #include <mutex>
 #include <string>
 #include <vector>
-#include <list>
-
 #include "./ObjectInterface.cpp"
-
-
 
 using namespace std;
 
@@ -28,6 +24,8 @@ public:
         pthread_mutex_destroy(&mutex);
     }
     bool insert(int key, string value) {
+        // cout << "testing insert" << endl;
+        // return true;
         int index = hash(key);
         List *list = &table[index];
         return insert(key, value, list);
@@ -87,15 +85,20 @@ private:
         list->head = NULL;
         list->tail = NULL;
         list->size = 0;
-        pthread_mutex_init(&list->mutex, NULL);
+        if (pthread_mutex_init(&list->mutex, NULL) != 0) {
+            cout << "mutex init failed" << endl;
+        }
     }
 
     bool insert(int key, string value, List* list) {
 
         // Lock the mutex
-        pthread_mutex_lock(&list->mutex);
+        if (pthread_mutex_lock(&list->mutex) != 0) {
+            cout << "mutex lock failed" << endl;
+        }
+
         Node* node = new Node(key, value);
-        if (list->head == NULL) {
+        if (!list->head) {
             list->head = node;
             list->size++;
             // Unlock the mutex
@@ -103,6 +106,11 @@ private:
             return true;
         }
         Node* current = list->head;
+        if (current->key == key) {
+            // Unlock the mutex
+            pthread_mutex_unlock(&list->mutex);
+            return false;
+        }
         while (current->next != NULL) {
             if (current->key == key) {
                 // Unlock the mutex
