@@ -1,4 +1,5 @@
 #include "./EvansMap.cpp"
+#include "./MariosBST.cpp"
 #include "queue"
 #include <iostream>
 #include <sstream>
@@ -19,10 +20,10 @@ int main(int argc, char const *argv[])
 
 
     EvansMap *evansMap = new EvansMap(10);
-    // MariosBST *mariosBST = new MariosBST();
+    MariosBST *mariosBST = new MariosBST();
     
     run(evansMap, file);
-    // run(mariosBST, file);
+    run(mariosBST, file);
 
 
     return 0;
