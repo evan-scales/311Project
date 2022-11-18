@@ -5,187 +5,67 @@
 #include <string>
 #include <vector>
 #include "./ObjectInterface.cpp"
+#include "./EvansBucket.cpp"
 
 using namespace std;
 
 class EvansMap : public ObjectInterface {
 public:
-    EvansMap(int size) {
-        table.resize(size);
-        // init the lists
-        for (int i = 0; i < table.size(); i++) {
-            List *list = &table[i];
-            initList(list);
-        }
-        pthread_mutex_init(&mutex, NULL);
-    }
-    ~EvansMap() {
-        table.clear();
-        pthread_mutex_destroy(&mutex);
-    }
-    bool insert(int key, string value) {
-        // cout << "testing insert" << endl;
-        // return true;
-        int index = hash(key);
-        List *list = &table[index];
-        return insert(key, value, list);
-    }
-    string get(int key) {
-        int index = hash(key);
-        List *list = &table[index];
-        if (list->head == NULL) {
-            return "No " + to_string(key);
-        }
-        return get(key, list);
 
+    EvansMap(int numBuckets) { 
+        // set the number of buckets
+        this->numBuckets = numBuckets;
+        // make array of buckets
+        buckets = new EvansBucket[numBuckets];
+        // locks.resize(numBuckets);
+        // init the locks
+        // for (int i = 0; i < numBuckets; i++) {
+        //     locks[i] = PTHREAD_MUTEX_INITIALIZER;
+        // }
     }
-    bool remove(int key) {
-        int index = hash(key);
-        List *list = &table[index];
-        if (list->head == NULL) {
-            return false;
-        }
-        return remove(key, list);
+    bool insert(int key, string value) { 
+        // get the bucket
+        int bucketIndex = key % numBuckets;
+        // lock the bucket
+        // pthread_mutex_lock(&locks[bucketIndex]);
+        EvansBucket *bucket = &buckets[bucketIndex];
+        // insert into the bucket
+        bool ret = bucket->insert(key, value);
+        // unlock the bucket
+        // pthread_mutex_unlock(&locks[bucketIndex]);
+        return ret;
     }
-    void print() {
-        // Lock the mutex
-        pthread_mutex_lock(&mutex);
-        for (int i = 0; i < table.size(); i++) {
-            cout << i << ": ";
-            List *list = &table[i];
-            print(list);
-            cout << endl;
-        }
-        // Unlock the mutex
-        pthread_mutex_unlock(&mutex);
+    string get(int key) { 
+        // get the bucket
+        int bucketIndex = key % numBuckets;
+        // lock the bucket
+        // pthread_mutex_lock(&locks[bucketIndex]);
+        // locks[bucketIndex].lock();
+        EvansBucket *bucket = &buckets[bucketIndex];
+        // get from the bucket
+        string ret = bucket->get(key);
+        // unlock the bucket
+        // pthread_mutex_unlock(&locks[bucketIndex]);
+        return ret;
     }
-
+    bool remove(int key) { 
+        // get the bucket
+        int bucketIndex = key % numBuckets;
+        // lock the bucket
+        // pthread_mutex_lock(&locks[bucketIndex]);
+        EvansBucket *bucket = &buckets[bucketIndex];
+        // remove from the bucket
+        bool ret = bucket->remove(key);
+        // unlock the bucket
+        // pthread_mutex_unlock(&locks[bucketIndex]);
+        return ret;
+    }
+    void print() { }
 private:
-    int hash(int key) {
-        return key % table.size();
-    }
-    struct Node {
-        int key;
-        string value;
-        Node* next;
-        Node(int key, string value) {
-            this->key = key;
-            this->value = value;
-            this->next = NULL;
-        }
-    };
-    struct List {
-        Node* head;
-        Node* tail;
-        int size;
-        pthread_mutex_t mutex;
-    };
 
-    void initList(List* list) {
-        list->head = NULL;
-        list->tail = NULL;
-        list->size = 0;
-        if (pthread_mutex_init(&list->mutex, NULL) != 0) {
-            cout << "mutex init failed" << endl;
-        }
-    }
-
-    bool insert(int key, string value, List* list) {
-
-        // Lock the mutex
-        if (pthread_mutex_lock(&list->mutex) != 0) {
-            cout << "mutex lock failed" << endl;
-        }
-
-        Node* node = new Node(key, value);
-        if (!list->head) {
-            list->head = node;
-            list->size++;
-            // Unlock the mutex
-            pthread_mutex_unlock(&list->mutex);
-            return true;
-        }
-        Node* current = list->head;
-        if (current->key == key) {
-            // Unlock the mutex
-            pthread_mutex_unlock(&list->mutex);
-            return false;
-        }
-        while (current->next != NULL) {
-            if (current->key == key) {
-                // Unlock the mutex
-                pthread_mutex_unlock(&list->mutex);
-                return false;
-            }
-            current = current->next;
-        }
-        current->next = node;
-        list->size++;
-        // Unlock the mutex
-        pthread_mutex_unlock(&list->mutex);
-        return true;
-    }
-
-    string get(int key, List* list) {
-        // Lock the mutex
-        pthread_mutex_lock(&list->mutex);
-        Node* current = list->head;
-        while (current != NULL) {
-            if (current->key == key) {
-                // Unlock the mutex
-                pthread_mutex_unlock(&list->mutex);
-                return current->value;
-            }
-            current = current->next;
-        }
-        // Unlock the mutex
-        pthread_mutex_unlock(&list->mutex);
-        return "No " + to_string(key);
-    }
-
-    void print(List* list) {
-        // Lock the mutex
-        pthread_mutex_lock(&list->mutex);
-        Node* current = list->head;
-        while (current != NULL) {
-            cout << current->key << " " << current->value << " ";
-            current = current->next;
-        }
-        cout << endl;
-        // Unlock the mutex
-        pthread_mutex_unlock(&list->mutex);
-    }
-
-    bool remove(int key, List* list) {
-        // Lock the mutex
-        pthread_mutex_lock(&list->mutex);
-        Node* current = list->head;
-        if (current == NULL) {
-            // Unlock the mutex
-            pthread_mutex_unlock(&list->mutex);
-            return false;
-        }
-        if (current->key == key) {
-            list->head = current->next;
-            list->size--;
-            // Unlock the mutex
-            pthread_mutex_unlock(&list->mutex);
-            return true;
-        }
-        while (current->next != NULL) {
-            if (current->next->key == key) {
-                current->next = current->next->next;
-                list->size--;
-                // Unlock the mutex
-                pthread_mutex_unlock(&list->mutex);
-                return true;
-            }
-            current = current->next;
-        }
-        // Unlock the mutex
-        pthread_mutex_unlock(&list->mutex);
-        return false;
-    }
-    vector<List> table;
-    pthread_mutex_t mutex;
+    int hash(int key) { return 0; }
+    EvansBucket *buckets;
+    // array of locks
+    // vector<pthread_mutex_t> locks;
+    int numBuckets;
 };
