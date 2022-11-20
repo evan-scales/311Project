@@ -1,0 +1,15 @@
+# ignore files without extensions (cpp executables)
+*
+!*/
+!*.*
+
+# ignore cpp object code
+.o
+
+# include the makefile & readme
+!makefile
+!readme_instructions.txt
+
+# ignore generated .txt files
+.txt
+
