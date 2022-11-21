@@ -1,20 +1,29 @@
+// Written by Mario Misencik
 #include <iostream>
 #include <string>
 #include <pthread.h>
+#include "./ObjectInterface.cpp"
 using namespace std;
 
 class MariosBST : public ObjectInterface {
     private:
         struct node {
+            // Mutex for the node
             pthread_mutex_t mutex;
+            // Integer value of node
             int key;
+            // String value of node
             string value;
+            // Children of node
             node *left, *right;
         };
 
+        // Mutex for the tree
         pthread_mutex_t mutex;
+        // The root of the tree
         node *root;
 
+        // Create a new node to insert into the tree
         node *makeNode(int key, string value) {
             node *n = new node();
             pthread_mutex_init(&n->mutex, NULL);
@@ -24,6 +33,7 @@ class MariosBST : public ObjectInterface {
             return n;
         }
 
+        // Returns the height of the overall subtree
         int height(node *parent, node *child) {
             int lh, rh;
             if (child == NULL) {
@@ -38,6 +48,7 @@ class MariosBST : public ObjectInterface {
             return 1 + (max(lh, rh));
         }
 
+        // Checks to see if the tree is balanced; that is, its left and right subtree heights have a difference of -1, 0 or 1
         bool isBalanced(node *parent, node *child) {
             int lh, rh;
             bool lb, rb;
@@ -64,6 +75,7 @@ class MariosBST : public ObjectInterface {
             else return false;
         }
 
+        // Finds the node in the tree that needs to be rotated
         node *findCulprit (node *parent, node *child) {
             int lh, rh;
             node *lc, *rc;
@@ -138,6 +150,7 @@ class MariosBST : public ObjectInterface {
             return ret;
         }
 
+        // Balances the tree. Based on various subheights, a different rotation are performed on the culprit.
         node *balanceTree(node *culprit) {
             int culLH = height(culprit, culprit->left);
             int culRH = height(culprit, culprit->right);
@@ -153,6 +166,7 @@ class MariosBST : public ObjectInterface {
             else return culprit;
         }
 
+        // Because removing the root is a special operation, it has its own method.
         bool removeRoot() {
             if (root->left == NULL && root->right == NULL) {
                 pthread_mutex_unlock(&root->mutex);
@@ -197,7 +211,7 @@ class MariosBST : public ObjectInterface {
             if (isBalanced(NULL, root)) return true;
             else {
                 node *culprit = findCulprit(NULL, root);
-                if (culprit = root) root = balanceTree(root);
+                if (culprit == root) root = balanceTree(root);
                 else culprit = balanceTree(culprit);
                 return true;
             }
@@ -212,6 +226,7 @@ class MariosBST : public ObjectInterface {
             pthread_mutex_destroy(&mutex);
         }
 
+        // Inserts a node.
         bool insert(int key, string value) {
             pthread_mutex_lock(&mutex);
             if (root == NULL) {
@@ -253,6 +268,7 @@ class MariosBST : public ObjectInterface {
             }
         }
 
+        // Removes a node.
         bool remove(int key) {
             pthread_mutex_lock(&mutex);
             if (root == NULL) {
@@ -340,6 +356,7 @@ class MariosBST : public ObjectInterface {
             }
         }
 
+        // Retrives the string value of a node based on its key.
         string get(int key) {
             pthread_mutex_lock(&mutex);
             if (root == NULL) {
