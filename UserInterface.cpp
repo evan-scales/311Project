@@ -70,7 +70,7 @@ int main(int argc, char const *argv[])
     // MariosBST *mariosBST = new MariosBST();
     
     run(evansMap, file);
-    run(mariosBST, file);
+    //run(mariosBST, file);
 
 
     return 0;
