@@ -4,7 +4,7 @@ generatetxt: GenerateTxt.cpp
 	g++ -I . GenerateTxt.cpp -o generatetxt
 
 userinterface:
-	g++ -I . EvansMap.cpp MariosBST.cpp UserInterface.cpp -o userinterface
+	g++ -Wall -std=c++17 -I . -lpthread EvansMap.cpp EvansBucket.cpp UserInterface.cpp ObjectInterface.cpp -o userinterface
 
 test:
 	g++ -I . Test.cpp -o test

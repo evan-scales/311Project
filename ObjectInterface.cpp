@@ -1,5 +1,7 @@
 #include <string>
 using namespace std;
+
+namespace TS {
 class ObjectInterface
 {
 private:
@@ -10,3 +12,4 @@ public:
     virtual bool remove(int key) = 0;
     virtual void print() = 0;
 };
+}
