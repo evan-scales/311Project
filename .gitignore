@@ -13,3 +13,6 @@
 # ignore generated .txt files
 .txt
 
+# ignore ds_store files
+.ds_store
+
