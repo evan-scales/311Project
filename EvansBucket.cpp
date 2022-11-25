@@ -1,24 +1,25 @@
 // Written by Evan Scales
 
 #include <string>
-#include <iostream>
-using namespace std;
 #include <shared_mutex>
-#include <mutex>
-// #include <shared_lock>
 
+struct Node {
+    int key;
+    std::string value;
+    Node *next;
+    Node(int key, std::string value) {
+        this->key = key;
+        this->value = value;
+        this->next = nullptr;
+    }
+};
 
+namespace TS {
 
 class EvansBucket {
 public:
-   EvansBucket() {
-        // init the mutex
-        mutex = PTHREAD_MUTEX_INITIALIZER;
-
-   }
+    EvansBucket() { }
     ~EvansBucket() {
-        pthread_mutex_destroy(&mutex);
-        // Delete the list
         Node *current = head;
         while (current != NULL) {
             Node *next = current->next;
@@ -26,89 +27,59 @@ public:
             current = next;
         }
     }
-    bool insert(int key, string value) {
-        // lock the mutex
-        if (pthread_mutex_lock(&mutex)) {
-            cout << "mutex lock failed" << endl;
-        }
-
-        // std::unique_lock lock(mutex);
-        // check if the key is already in the list
-        Node *current = head;
-        while (current != NULL) {
-            if (current->key == key) {
-                // unlock the mutex
-                pthread_mutex_unlock(&mutex);
+    bool insert(int key, std::string value) {
+        std::unique_lock lock(mutex_);
+        Node* curr = head;
+        while (curr != nullptr) {
+            if (curr->key == key) {
                 return false;
             }
-            current = current->next;
+            curr = curr->next;
         }
-        // insert the new node
-        Node *node = new Node(key, value);
-        node->next = head;
-        head = node;
+
+        Node* newNode = new Node(key, value);
+        newNode->next = head;
+        head = newNode;
         size++;
-        // unlock the mutex
-        pthread_mutex_unlock(&mutex);
         return true;
     }
-    string get(int key) {
-        // lock the mutex
-        pthread_mutex_lock(&mutex);
-        // std::shared_lock lock(mutex);
-        Node *current = head;
-        while (current != NULL) {
-            if (current->key == key) {
-                // unlock the mutex
-                pthread_mutex_unlock(&mutex);
-                return current->value;
+    std::string get(int key) {
+        std::shared_lock lock(mutex_);
+        Node* curr = head;
+        while (curr != nullptr) {
+            if (curr->key == key) {
+                return curr->value;
             }
-            current = current->next;
+            curr = curr->next;
         }
-        // unlock the mutex
-        pthread_mutex_unlock(&mutex);
-        return "No " + to_string(key);
+        return "No " + std::to_string(key);
     }
+
     bool remove(int key) {
-        // // lock the mutex
-        pthread_mutex_lock(&mutex);
-        // std::unique_lock lock(mutex);
-        Node *current = head;
-        Node *prev = NULL;
-        while (current != NULL) {
-            if (current->key == key) {
-                if (prev == NULL) {
-                    head = current->next;
+        std::unique_lock lock(mutex_);
+        Node* curr = head;
+        Node* prev = nullptr;
+        while (curr != nullptr) {
+            if (curr->key == key) {
+                if (prev == nullptr) {
+                    head = curr->next;
                 } else {
-                    prev->next = current->next;
+                    prev->next = curr->next;
                 }
-                delete current;
+                delete curr;
                 size--;
-                // unlock the mutex
-                pthread_mutex_unlock(&mutex);
                 return true;
             }
-            prev = current;
-            current = current->next;
+            prev = curr;
+            curr = curr->next;
         }
-        // unlock the mutex
-        pthread_mutex_unlock(&mutex);
         return false;
     }
 
 private:
-    struct Node {
-        int key;
-        string value;
-        Node *next;
-        Node(int key, string value) {
-            this->key = key;
-            this->value = value;
-            this->next = NULL;
-        }
-    };
 
     Node *head;
     int size;
-    pthread_mutex_t mutex;
+    mutable std::shared_timed_mutex mutex_;
 };
+}
