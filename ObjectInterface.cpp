@@ -5,6 +5,8 @@ struct opsStruct {
     char op;
     int key;
     string value;
+    string result;
+    int object;
 
     opsStruct(char op, int key, string value) : op(op), key(key), value(value) {}
     opsStruct(char op, int key) : op(op), key(key) {}
@@ -13,7 +15,6 @@ struct opsStruct {
 };
 
 
-namespace TS {
 class ObjectInterface
 {
 private:
@@ -25,4 +26,3 @@ public:
     virtual bool remove(int key) = 0;
     virtual void print() = 0;
 };
-}

@@ -1,11 +1,11 @@
 // Written by Evan Scales
 #include "./ObjectInterface.cpp"
-#include "./EvansBucket.cpp"
+#include <list>
+#include <pthread.h>
 
 
 using namespace std;
 
-namespace TS {
 class EvansMap : public ObjectInterface {
 public:
 
@@ -13,58 +13,109 @@ public:
         // set the number of buckets
         this->numBuckets = numBuckets;
         // make array of buckets
-        buckets = new EvansBucket[numBuckets];
+        buckets = new list<Node>[numBuckets];
+        locks = new pthread_mutex_t[numBuckets];
+        for (int i = 0; i < numBuckets; i++) {
+            pthread_mutex_init(&locks[i], NULL);
+        }
     }
 
     ~EvansMap() {
         // delete the buckets
+        delete[] locks;
+        for (int i = 0; i < numBuckets; i++) {
+            buckets[i].clear();
+        }
         delete[] buckets;
     }
 
     string runOp(struct opsStruct *op) {
-        // cout << "OP: " << op->op << " KEY: " << op->key << " VALUE: " << op->value << endl;
-        buckets[hsh(op->key)].lock();
-        // cout << "Locked bucket " << hsh(op->key) << endl;
+        pthread_mutex_lock(&locks[hsh(op->key)]);
+        cout << "locked bucket " << hsh(op->key) << " for " << op->op << " " << op->value << endl;
         switch (op->op) {
             case 'I':
-                // cout << "inserting " << op->key << " " << op->value << endl; 
                 if (insert(op->key, op->value)) {
-                    buckets[hsh(op->key)].unlock();
                     return "Ok Inserting " + to_string(op->key) + " " + op->value;
                 } else {
-                    buckets[hsh(op->key)].unlock();
                     return "Fail Inserting " + to_string(op->key) + " " + op->value;
                 }
             case 'L':
-                buckets[hsh(op->key)].unlock();
                 return get(op->key);
             case 'D':
                 if (remove(op->key)) {
-                    buckets[hsh(op->key)].unlock();
                     return "Ok Deleting " + to_string(op->key);
                 } else {
-                    buckets[hsh(op->key)].unlock();
                     return "Fail Deleting " + to_string(op->key);
                 }
             default:
-                buckets[hsh(op->key)].unlock();
                 return "Fail";
         }
     }
 
     bool insert(int key, string value) { 
-        return buckets[hsh(key)].insert(key, value);
+        // lock the bucket
+        // pthread_mutex_lock(&locks[hsh(key)]);
+        // see if the list contains the key
+        for (auto it = buckets[hsh(key)].begin(); it != buckets[hsh(key)].end(); it++) {
+            if (it->key == key) {
+                // unlock the bucket
+                pthread_mutex_unlock(&locks[hsh(key)]);
+                return false;
+            }
+        }
+        // add the key to the list
+        Node newNode = Node(key, value);
+        buckets[hsh(key)].push_back(newNode);
+        // unlock the bucket
+        pthread_mutex_unlock(&locks[hsh(key)]);
+        return true;
     }
     string get(int key) { 
-        return buckets[hsh(key)].get(key);
+        // lock the bucket
+        // pthread_mutex_lock(&locks[hsh(key)]);
+        // see if the list contains the key
+        for (auto it = buckets[hsh(key)].begin(); it != buckets[hsh(key)].end(); it++) {
+            if (it->key == key) {
+                // unlock the bucket
+                pthread_mutex_unlock(&locks[hsh(key)]);
+                return it->value;
+            }
+        }
+        // unlock the bucket
+        pthread_mutex_unlock(&locks[hsh(key)]);
+        return "No " + to_string(key);
     }
     bool remove(int key) { 
-        return buckets[hsh(key)].remove(key);
+        // lock the bucket
+        // pthread_mutex_lock(&locks[hsh(key)]);
+        // see if the list contains the key
+        for (auto it = buckets[hsh(key)].begin(); it != buckets[hsh(key)].end(); it++) {
+            if (it->key == key) {
+                // remove the key from the list
+                buckets[hsh(key)].erase(it);
+                // unlock the bucket
+                pthread_mutex_unlock(&locks[hsh(key)]);
+                return true;
+            }
+        }
+        // unlock the bucket
+        pthread_mutex_unlock(&locks[hsh(key)]);
+        return false;
     }
     void print() { }
 private:
+    struct Node {
+        int key;
+        std::string value;
+        Node *next;
+        Node(int key, std::string value) {
+            this->key = key;
+            this->value = value;
+            this->next = nullptr;
+        }
+    };
+    std::list<Node> * buckets;
+    pthread_mutex_t * locks;
     int hsh(int key) { return key % numBuckets; }
-    EvansBucket *buckets;
     int numBuckets;
 };
-}

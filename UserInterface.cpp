@@ -13,23 +13,34 @@ using std::string;
 
 using namespace std;
 
+
+
 // shared queue
-queue<string> commands;
+// opsStruct *commands;
+vector<opsStruct> commands;
+
+//shared map
+EvansMap *evansMap = new EvansMap(10);
 
 
 
 // shared array for output
 vector<string> output;
 
+int EVANS_MAP = 0;
+int MARIOS_BST = 1;
+
 // change this to use buffer to read large files
-queue<string> getCommands(string fileName);
-void run(TS::ObjectInterface &object, string file, string outputFile);
+vector<opsStruct> getCommands(string fileName);
+void run(int object, string file, string outputFile);
+
 
 void* threadFunction(void* args) {
-    pair<TS::ObjectInterface*, opsStruct*> *data = (pair<TS::ObjectInterface*, opsStruct*>*) args;
-    output.push_back(data->first->runOp(data->second));
+    struct opsStruct *op = (struct opsStruct*) args;
+    if (op->object == EVANS_MAP) {
+        op->result = evansMap->runOp(op);
+    }
     return NULL;
-    // return (void*) &data->first->runOp(data->second);
 }
 
 
@@ -41,15 +52,9 @@ int main(int argc, char const *argv[])
     string inputFile = argv[1];
     string outputFile = argv[2];
 
-    // Initialize the objbjects
-    TS::EvansMap evansMap(10);
-    // MariosBST *mariosBST = new MariosBST();
-    
-    output.reserve(1000000);
-
 
     // // run the program 
-    run(evansMap, inputFile, outputFile);
+    run(EVANS_MAP, inputFile, outputFile);
     // run(mariosBST, inputFile, outputFile);
 
 
@@ -60,64 +65,37 @@ int main(int argc, char const *argv[])
 // run the program with a given object inputfile and outputfile
 // will read the input file and run the commands with the number of specified threads
 // will write the output to the output file
-void run(TS::ObjectInterface &object, string file, string outputFile) {
+void run(int object, string file, string outputFile) {
     // get the commands from the file
     commands = getCommands(file);
-
-    // get the max number of threads to use
-    string numThreadsCommand = commands.front();
-    commands.pop();
-    int maxNumThreads = stoi(numThreadsCommand.substr(2));
+    int opsIndex = 0;
 
 
-    output.push_back("Using " + to_string(maxNumThreads) + " threads");
+    int maxNumThreads = commands[opsIndex].key;
+    commands[opsIndex].result = "Using " + to_string(commands[opsIndex].key) + " threads";
+    commands[opsIndex].object = object;
+    opsIndex++;
+
 
     // while there are still commands to run
     // create a thread for each command for the max number of threads
     // then join the threads
-    while(!commands.empty()) {
-        int numThreads = commands.size() < maxNumThreads ? commands.size() : maxNumThreads;
+    while(opsIndex < commands.size()) {
+        int commandsLeft = commands.size() - opsIndex;
+        int numThreads = commandsLeft < maxNumThreads ? commandsLeft : maxNumThreads;
 
         // threads to use
         pthread_t threads[numThreads];
-        opsStruct ops[numThreads];
 
         for (int i = 0; i < numThreads; i++) {
-            string command = commands.front();
-            char c = command[0];
-            commands.pop();
-
-            int key;
-            string value;
-
-            int space1 = command.find(" ");
-            int space2 = command.find(" ", space1 + 1);
-
-            // check if there is a second space
-            if (space2 != -1) {
-                key = stoi(command.substr(space1 + 1, space2 - space1 - 1));
-                value = command.substr(space2 + 1);
-            } else {
-                key = stoi(command.substr(space1 + 1));
-                value = "";
-            }
-
-            ops[i].op = c;
-            ops[i].key = key;
-            ops[i].value = value;
-            pair<TS::ObjectInterface*, opsStruct*> *args = new pair<TS::ObjectInterface*, opsStruct*>(&object, &ops[i]);
-            pthread_create(&threads[i], NULL, threadFunction, (void *) args);
-
-            // sleep for 1 microsecond to make sure the threads are created in order
-            std::this_thread::sleep_for(std::chrono::microseconds(1));
-            
+            commands[opsIndex].object = object;
+            pthread_create(&threads[i], NULL, &threadFunction, (void *) &commands[opsIndex]);
+            // sleep for 1 microsecond to allow the threads to be created
+            std::this_thread::sleep_for(std::chrono::microseconds(1/100));
+            opsIndex++;
         }
 
         for (int i = 0; i < numThreads; i++) {
-            // void *result = NULL;
-            // pthread_join(threads[i], (void**) result);
-            // output.push_back((char*) result);
-
             pthread_join(threads[i], NULL);
         }
 
@@ -126,24 +104,40 @@ void run(TS::ObjectInterface &object, string file, string outputFile) {
     // write to outputFile
     ofstream out;
     out.open(outputFile, ios::app);
-    for (int i = 0; i < output.size(); i++) {
-        out << output[i] << endl;
+    for (int i = 0; i < commands.size(); i++) {
+        cout << commands[i].result << endl;
+        out << commands[i].result << endl;
     }
     out.close();
 
-    // clear the output
-    output.clear();
+    // clear the commands
+    commands.clear();
 }
 
 // reads in a file with commands to be added to a global queue
 // will change to use a buffer to handle files larger than memory
-queue<string> getCommands(string fileName) {
-    queue<string> commands;
+vector<opsStruct> getCommands(string fileName) {
+    vector<opsStruct> commands;
     std::ifstream in(fileName);
     string line = "";
     if (in.is_open()) {
         while (getline(in, line)) {
-            commands.push(line);
+            char c = line[0];
+            int space1 = line.find(" ");
+            int space2 = line.find(" ", space1 + 1);
+
+            int key;
+            string value;
+            // check if there is a second space
+            if (space2 != -1) {
+                key = stoi(line.substr(space1 + 1, space2 - space1 - 1));
+                value = line.substr(space2 + 1);
+            } else {
+                key = stoi(line.substr(space1 + 1));
+                value = "";
+            }
+            opsStruct op = {c, key, value};
+            commands.push_back(op);
         }
     } else {
         cout << "Unable to open file" << endl;
