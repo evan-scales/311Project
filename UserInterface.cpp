@@ -17,12 +17,20 @@ using namespace std;
 queue<string> commands;
 
 
+
 // shared array for output
 vector<string> output;
 
 // change this to use buffer to read large files
 queue<string> getCommands(string fileName);
 void run(TS::ObjectInterface &object, string file, string outputFile);
+
+void* threadFunction(void* args) {
+    pair<TS::ObjectInterface*, opsStruct*> *data = (pair<TS::ObjectInterface*, opsStruct*>*) args;
+    output.push_back(data->first->runOp(data->second));
+    return NULL;
+    // return (void*) &data->first->runOp(data->second);
+}
 
 
 int main(int argc, char const *argv[])
@@ -34,7 +42,7 @@ int main(int argc, char const *argv[])
     string outputFile = argv[2];
 
     // Initialize the objbjects
-    TS::EvansMap evansMap(100);
+    TS::EvansMap evansMap(10);
     // MariosBST *mariosBST = new MariosBST();
     
     output.reserve(1000000);
@@ -49,7 +57,6 @@ int main(int argc, char const *argv[])
 }
 
 
-
 // run the program with a given object inputfile and outputfile
 // will read the input file and run the commands with the number of specified threads
 // will write the output to the output file
@@ -62,8 +69,6 @@ void run(TS::ObjectInterface &object, string file, string outputFile) {
     commands.pop();
     int maxNumThreads = stoi(numThreadsCommand.substr(2));
 
-    // threads to use
-    pthread_t threads[maxNumThreads];
 
     output.push_back("Using " + to_string(maxNumThreads) + " threads");
 
@@ -73,46 +78,46 @@ void run(TS::ObjectInterface &object, string file, string outputFile) {
     while(!commands.empty()) {
         int numThreads = commands.size() < maxNumThreads ? commands.size() : maxNumThreads;
 
+        // threads to use
+        pthread_t threads[numThreads];
+        opsStruct ops[numThreads];
+
         for (int i = 0; i < numThreads; i++) {
-            pthread_t thread = nullptr;
+            string command = commands.front();
+            char c = command[0];
+            commands.pop();
 
-            // lambda function to run the command
-            if (pthread_create(&thread, NULL, [](void *arg) -> void* {
-                TS::ObjectInterface *object = (TS::ObjectInterface *)arg;
-                string command = commands.front();
-                commands.pop();
+            int key;
+            string value;
 
-                if (command[0] == 'I') {
-                    int space1 = command.find(" ");
-                    int space2 = command.find(" ", space1 + 1);
-                    int key = stoi(command.substr(space1 + 1, space2 - space1 - 1));
-                    std::string value = command.substr(space2 + 1);
+            int space1 = command.find(" ");
+            int space2 = command.find(" ", space1 + 1);
 
-                    object->insert(key, value) ? output.push_back("OK") : output.push_back("FAIL");
-                    
-                } else if (command[0] == 'L') {
-                   int key = stoi(command.substr(2));
-
-                   output.push_back(object->get(key));
-                    
-                } else if (command[0] == 'D') {
-                    int key = stoi(command.substr(2));
-
-                    object->remove(key) ? output.push_back("OK") : output.push_back("FAIL");
-                    
-                } else {
-                    cout << "Invalid command" << endl;
-                }
-                return NULL;
-            }, &object)) {
-                cout << "Error: unable to create thread, " << i << endl;
-                exit(-1);
+            // check if there is a second space
+            if (space2 != -1) {
+                key = stoi(command.substr(space1 + 1, space2 - space1 - 1));
+                value = command.substr(space2 + 1);
+            } else {
+                key = stoi(command.substr(space1 + 1));
+                value = "";
             }
 
-            threads[i] = thread;
+            ops[i].op = c;
+            ops[i].key = key;
+            ops[i].value = value;
+            pair<TS::ObjectInterface*, opsStruct*> *args = new pair<TS::ObjectInterface*, opsStruct*>(&object, &ops[i]);
+            pthread_create(&threads[i], NULL, threadFunction, (void *) args);
+
+            // sleep for 1 microsecond to make sure the threads are created in order
+            std::this_thread::sleep_for(std::chrono::microseconds(1));
+            
         }
 
         for (int i = 0; i < numThreads; i++) {
+            // void *result = NULL;
+            // pthread_join(threads[i], (void**) result);
+            // output.push_back((char*) result);
+
             pthread_join(threads[i], NULL);
         }
 

@@ -21,6 +21,37 @@ public:
         delete[] buckets;
     }
 
+    string runOp(struct opsStruct *op) {
+        // cout << "OP: " << op->op << " KEY: " << op->key << " VALUE: " << op->value << endl;
+        buckets[hsh(op->key)].lock();
+        // cout << "Locked bucket " << hsh(op->key) << endl;
+        switch (op->op) {
+            case 'I':
+                // cout << "inserting " << op->key << " " << op->value << endl; 
+                if (insert(op->key, op->value)) {
+                    buckets[hsh(op->key)].unlock();
+                    return "Ok Inserting " + to_string(op->key) + " " + op->value;
+                } else {
+                    buckets[hsh(op->key)].unlock();
+                    return "Fail Inserting " + to_string(op->key) + " " + op->value;
+                }
+            case 'L':
+                buckets[hsh(op->key)].unlock();
+                return get(op->key);
+            case 'D':
+                if (remove(op->key)) {
+                    buckets[hsh(op->key)].unlock();
+                    return "Ok Deleting " + to_string(op->key);
+                } else {
+                    buckets[hsh(op->key)].unlock();
+                    return "Fail Deleting " + to_string(op->key);
+                }
+            default:
+                buckets[hsh(op->key)].unlock();
+                return "Fail";
+        }
+    }
+
     bool insert(int key, string value) { 
         return buckets[hsh(key)].insert(key, value);
     }
