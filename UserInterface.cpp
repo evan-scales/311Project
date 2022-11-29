@@ -27,7 +27,7 @@ int MARIOS_BST = 1;
 
 // change this to use buffer to read large files
 vector<opsStruct> getCommands(string fileName);
-void run(int object, string file, string outputFile);
+void run(int object, string file, string outputFile, bool singleThreaded);
 
 
 void* threadFunction(void* args) {
@@ -52,8 +52,9 @@ int main(int argc, char const *argv[])
 
 
     // // run the program 
-    run(EVANS_MAP, inputFile, outputFile);
-    // run(MARIOS_BST, inputFile, outputFile);
+    // Added singleThreaded boolean for testing purposes (default = false)
+    run(EVANS_MAP, inputFile, outputFile, false);
+    // run(MARIOS_BST, inputFile, outputFile, false);
 
 
     return 0;
@@ -63,7 +64,7 @@ int main(int argc, char const *argv[])
 // run the program with a given object inputfile and outputfile
 // will read the input file and run the commands with the number of specified threads
 // will write the output to the output file
-void run(int object, string file, string outputFile) {
+void run(int object, string file, string outputFile, bool singleThreaded) {
     // get the commands from the file
     commands = getCommands(file);
     int opsIndex = 0;
@@ -85,7 +86,10 @@ void run(int object, string file, string outputFile) {
         int numThreads = commandsLeft < maxNumThreads ? commandsLeft : maxNumThreads;
 
         // threads to use
-        pthread_t threads[numThreads];
+        pthread_t threads[1];
+        if (!singleThreaded) {
+            pthread_t threads[numThreads];
+        }
 
         for (int i = 0; i < numThreads; i++) {
             commands[opsIndex].object = object;
@@ -108,7 +112,7 @@ void run(int object, string file, string outputFile) {
 
     // write to outputFile
     ofstream out;
-    out.open(outputFile, ios::app);
+    out.open(outputFile, ios::out);
     for (int i = 0; i < commands.size(); i++) {
         // cout << commands[i].result << endl;
         out << commands[i].result << endl;

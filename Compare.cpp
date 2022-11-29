@@ -55,7 +55,7 @@ bool Compare(string arg1, string arg2) {
     }
     file1.close();
     file2.close();
-    cout << "[SUCCESS]\n Both files matched." << endl;
+    cout << "[SUCCESS]\n<" << arg1 << "> and <" << arg2 << "> match." << endl;
     return true;
 }
 
