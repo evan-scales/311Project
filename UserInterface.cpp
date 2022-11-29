@@ -7,7 +7,6 @@
 #include <fstream>
 #include <pthread.h>
 #include <string>
-// #include "./opsStruct.cpp"
 
 using std::string;
 

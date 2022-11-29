@@ -2,7 +2,9 @@
 #include <iostream>
 #include <string>
 #include <pthread.h>
-#include "./ObjectInterface.cpp"
+// #include "./ObjectInterface.cpp"
+// #include "./opsStruct.cpp"
+#include "./EvansMap.cpp"
 using namespace std;
 
 class MariosBST : public ObjectInterface {
@@ -166,6 +168,7 @@ class MariosBST : public ObjectInterface {
             else return culprit;
         }
 
+
         // Because removing the root is a special operation, it has its own method.
         bool removeRoot() {
             if (root->left == NULL && root->right == NULL) {
@@ -224,6 +227,29 @@ class MariosBST : public ObjectInterface {
 
         ~MariosBST() {
             pthread_mutex_destroy(&mutex);
+        }
+
+        string runOp(struct opsStruct *op) { 
+            // pthread_mutex_lock(&locks[hsh(op->key)]);
+            // std::cout << "locked bucket " << hsh(op->key) << " for " << op->op << " " << op->value << std::endl;
+            switch (op->op) {
+                case 'I':
+                    if (insert(op->key, op->value)) {
+                        return "OK";
+                    } else {
+                        return "Fail";
+                    }
+                case 'L':
+                    return get(op->key);
+                case 'D':
+                    if (remove(op->key)) {
+                        return "OK";
+                    } else {
+                        return "Fail";
+                    }
+                default:
+                    return "Fail";
+            }
         }
 
         // Inserts a node.
