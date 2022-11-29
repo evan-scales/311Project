@@ -1,31 +1,27 @@
 #include <chrono>
 #include <thread>
-#include "./EvansMap.cpp"
-// #include "./MariosBST.cpp"
+#include "./MariosBST.cpp"
 #include "queue"
 #include <iostream>
 #include <sstream>
 #include <fstream>
 #include <pthread.h>
 #include <string>
+// #include "./opsStruct.cpp"
 
 using std::string;
 
 using namespace std;
 
 
-
 // shared queue
-// opsStruct *commands;
 vector<opsStruct> commands;
 
 //shared map
-EvansMap *evansMap = new EvansMap(10);
+EvansMap *evansMap = new EvansMap(750);
+MariosBST *mariosBST = new MariosBST();
 
 
-
-// shared array for output
-vector<string> output;
 
 int EVANS_MAP = 0;
 int MARIOS_BST = 1;
@@ -39,6 +35,9 @@ void* threadFunction(void* args) {
     struct opsStruct *op = (struct opsStruct*) args;
     if (op->object == EVANS_MAP) {
         op->result = evansMap->runOp(op);
+    } 
+    else {
+        op->result = mariosBST->runOp(op);
     }
     return NULL;
 }
@@ -55,7 +54,7 @@ int main(int argc, char const *argv[])
 
     // // run the program 
     run(EVANS_MAP, inputFile, outputFile);
-    // run(mariosBST, inputFile, outputFile);
+    // run(MARIOS_BST, inputFile, outputFile);
 
 
     return 0;
@@ -80,6 +79,8 @@ void run(int object, string file, string outputFile) {
     // while there are still commands to run
     // create a thread for each command for the max number of threads
     // then join the threads
+    // time this
+    auto start = std::chrono::high_resolution_clock::now();
     while(opsIndex < commands.size()) {
         int commandsLeft = commands.size() - opsIndex;
         int numThreads = commandsLeft < maxNumThreads ? commandsLeft : maxNumThreads;
@@ -91,7 +92,7 @@ void run(int object, string file, string outputFile) {
             commands[opsIndex].object = object;
             pthread_create(&threads[i], NULL, &threadFunction, (void *) &commands[opsIndex]);
             // sleep for 1 microsecond to allow the threads to be created
-            std::this_thread::sleep_for(std::chrono::microseconds(1/100));
+            std::this_thread::sleep_for(std::chrono::microseconds(1));
             opsIndex++;
         }
 
@@ -100,12 +101,17 @@ void run(int object, string file, string outputFile) {
         }
 
     }
+    auto finish = std::chrono::high_resolution_clock::now();
+
+    // get the time
+    std::chrono::duration<double> elapsed = finish - start;
+    cout << "Elapsed time: " << elapsed.count() << " s" << endl;
 
     // write to outputFile
     ofstream out;
     out.open(outputFile, ios::app);
     for (int i = 0; i < commands.size(); i++) {
-        cout << commands[i].result << endl;
+        // cout << commands[i].result << endl;
         out << commands[i].result << endl;
     }
     out.close();
@@ -131,7 +137,15 @@ vector<opsStruct> getCommands(string fileName) {
             // check if there is a second space
             if (space2 != -1) {
                 key = stoi(line.substr(space1 + 1, space2 - space1 - 1));
-                value = line.substr(space2 + 1);
+                string badValue = line.substr(space2 + 1);
+                // remove the quotes around the value
+                // value = value.substr(1, value.length() - 2);
+                // remove the first and last character
+                // value = value.substr(1, value.length() - 2);
+                for (int i = 1; i < badValue.length() - 2; i++) {
+                    value += badValue[i];
+                }
+                cout << "value: " << value << endl;
             } else {
                 key = stoi(line.substr(space1 + 1));
                 value = "";
@@ -145,3 +159,4 @@ vector<opsStruct> getCommands(string fileName) {
     in.close();
     return commands;
 }
+
