@@ -31,7 +31,7 @@ public:
 
     string runOp(struct opsStruct *op) {
         pthread_mutex_lock(&locks[hsh(op->key)]);
-        cout << "locked bucket " << hsh(op->key) << " for " << op->op << " " << op->value << endl;
+        // cout << "locked bucket " << hsh(op->key) << " for " << op->op << " " << op->value << endl;
         switch (op->op) {
             case 'I':
                 if (insert(op->key, op->value)) {
@@ -45,7 +45,7 @@ public:
                 if (remove(op->key)) {
                     return "OK";
                 } else {
-                    return "Fail " + to_string(op->key);
+                    return "Fail";
                 }
             default:
                 return "Fail";

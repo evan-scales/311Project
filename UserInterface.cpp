@@ -136,15 +136,16 @@ vector<opsStruct> getCommands(string fileName) {
             // check if there is a second space
             if (space2 != -1) {
                 key = stoi(line.substr(space1 + 1, space2 - space1 - 1));
+
                 string badValue = line.substr(space2 + 1);
                 // remove the quotes around the value
                 // value = value.substr(1, value.length() - 2);
                 // remove the first and last character
                 // value = value.substr(1, value.length() - 2);
-                for (int i = 1; i < badValue.length() - 2; i++) {
+                for (int i = 1; i < badValue.length() - 1; i++) {
                     value += badValue[i];
                 }
-                cout << "value: " << value << endl;
+                // cout << "value: " << value << endl;
             } else {
                 key = stoi(line.substr(space1 + 1));
                 value = "";
