@@ -2,6 +2,13 @@
    CSCE311, USC Columbia Fall '22
 */
 
+/* This code is mostly deprecated and moved to UserInterface.cpp.
+   However, it can still be used to compare an output of ./userinterface
+   with its expected output as produced by ./filegenerator
+   NOTE: does not test scalability, just correctness.
+   USAGE: ./compare test_out.txt test_expected.txt
+*/ 
+
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -11,32 +18,6 @@
 #include "./EvansMap.cpp"
 
 using std::cin, std::cout, std::endl, std::vector, std::string;
-
-/**
- * @brief How to go about creating tests to compare our multi-threaded data structures to the single-threaded ones
- * 
- * opsStruct, holds char op int key string value, if no value then value is empty string, string result
- * 
- * Generate commands, creatting a new opsStruct for each command
- * Use unordered_map to get the expected result for the opsStruct
- * 
- * vector<opsStruct> commands
- * int i = 0
- * unoraered_map<int, string> map
- * while (i++ < commands.size()) 
- *    commands[i].result = map.runOp(commands[i])
- * 
- * No runOp command on unordered_map, so use switch statement to get op
- * then insert, delete, or find the key
- * Insert: "OK" if inserted, "FAIL" if not inserted
- * Delete: "OK" if deleted, "FAIL" if not deleted
- * Lookup: "{value}" if found, "No {key}" if not found
- * 
- * Write the commands to a file
- * Write the expected results to a file
- * Write a function to compare 2 result output files to see if they match
- * 
- */
 
 bool Compare(string arg1, string arg2) {
     ifstream file1(arg1);
