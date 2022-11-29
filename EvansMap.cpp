@@ -29,6 +29,14 @@ public:
         delete[] buckets;
     }
 
+    void clear() {
+        for (int i = 0; i < numBuckets; i++) {
+            pthread_mutex_lock(&locks[i]);
+            buckets[i].clear();
+            pthread_mutex_unlock(&locks[i]);
+        }
+    }
+
     string runOp(struct opsStruct *op) {
         pthread_mutex_lock(&locks[hsh(op->key)]);
         // cout << "locked bucket " << hsh(op->key) << " for " << op->op << " " << op->value << endl;

@@ -229,6 +229,8 @@ class MariosBST : public ObjectInterface {
             pthread_mutex_destroy(&mutex);
         }
 
+        void clear() { }
+
         string runOp(struct opsStruct *op) { 
             // pthread_mutex_lock(&locks[hsh(op->key)]);
             // std::cout << "locked bucket " << hsh(op->key) << " for " << op->op << " " << op->value << std::endl;
