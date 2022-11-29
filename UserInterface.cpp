@@ -55,7 +55,7 @@ int main(int argc, char const *argv[])
     string inputFile = argv[1];
     string outputFile = argv[2];
     int structure = std::stoi(argv[3]);  // 0 = Hashmap, 1 = BST
-    int compSingleThreaded = std::stoi(argv[4]);  // 0 = Don't, 1 = Do compare performance to single threaded version
+    int compSingleThreaded = std::stoi(argv[4]);  // 0 = Don't compare, 1 = Do compare performance to single threaded version
     if (structure != 1 && structure != 0)
         structure = 0;
     if (compSingleThreaded != 1 && compSingleThreaded != 0)
@@ -68,10 +68,10 @@ int main(int argc, char const *argv[])
     } else {
         float t1 = run(structure, inputFile, "ST_" + outputFile, true);  // Single-threaded (baseline)
 
-        // Need a way to clear the data structure completely for this to work
+        evansMap->clear();
         
         float t2 = run(structure, inputFile, outputFile, false);  // Based on input (possibly multi-threaded)
-        CompareST(outputFile, ("ST" + outputFile));
+        CompareST(outputFile, ("ST_" + outputFile));
         float percent = (t1/t2 * 100) - 100;
         if (percent < 0)
             percent *= -1;
@@ -99,7 +99,7 @@ bool CompareST(string arg1, string arg2) {
     }
     file1.close();
     file2.close();
-    cout << "[SUCCESS]\n<" << arg1 << "> and <" << arg2 << "> match." << endl;
+    cout << "[SUCCESS]\n<" << arg1 << "> matches the single-threaded output." << endl;
     return true;
 }
 
