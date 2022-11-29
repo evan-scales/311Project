@@ -1,10 +1,10 @@
 # ignore cpp executables
-userinterface 
-compare 
-filegenerator 
+userinterface
+compare
+filegenerator
 mariosbst
-evansmap 
-objectinterface 
+evansmap
+objectinterface
 userinterface
 
 # ignore cpp object code
@@ -15,11 +15,6 @@ userinterface
 
 # include the makefile & readme
 !makefile
-!readme.txt
-
-# misc include
-!output.txt
-!test.txt
 
 # ignore ds_store files
 .DS_Store
