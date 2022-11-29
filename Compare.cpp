@@ -2,17 +2,15 @@
    CSCE311, USC Columbia Fall '22
 */
 
-/* Waiting on user interface code to be commented before I attempt this
-
-*/
-
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <pthread.h>
 #include <mutex>
+#include <vector>
+#include "./EvansMap.cpp"
 
-using std::cin, std::cout, std::endl;
+using std::cin, std::cout, std::endl, std::vector, std::string;
 
 /**
  * @brief How to go about creating tests to compare our multi-threaded data structures to the single-threaded ones
@@ -40,7 +38,34 @@ using std::cin, std::cout, std::endl;
  * 
  */
 
-int main() {
-    cout << "Hey, there's nothing here yet!" << endl;
+bool Compare(string arg1, string arg2) {
+    ifstream file1(arg1);
+    ifstream file2(arg2);
+    int count = 1;
+    string compare1, compare2;
+    while (file1.good()) {
+        file1 >> compare1;
+        file2 >> compare2;
+        if (compare1 != compare2) {
+            cout << "[FAIL]\n" << arg1 << " produced: " << compare1 <<
+            "\nBut expected: " << compare2 << "\nAt string " << count << endl;
+            return false;
+        }
+        count++;
+    }
+    file1.close();
+    file2.close();
+    cout << "[SUCCESS]\n Both files matched." << endl;
+    return true;
+}
+
+int main(int argc, char *argv[]) {
+    if (argc != 3) {
+        cout << "./compare has format: <file1.txt> <file2.txt> " << endl;
+        return -1;
+    }
+
+    Compare(argv[1], argv[2]);
+
     return 0;
 }

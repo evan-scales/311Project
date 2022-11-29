@@ -260,7 +260,7 @@ bool write_test(std::string fn, const int inserts, const int deletes, const int 
         test_out<<"OK"<<std::endl;
 
     }
-    std::cout<<"in loop"<<std::endl;
+    std::cout<<"Generating..."<<std::endl;
     while(n_insert<inserts || n_delete<deletes || n_lookup<lookups){
         int option = rand()%3;
         
@@ -304,6 +304,8 @@ bool write_test(std::string fn, const int inserts, const int deletes, const int 
 
     out.close();
     test_out.close();
+
+    cout << "Generated " << fn << ".txt" << std::endl;
 
     return true;
 }

@@ -3,8 +3,11 @@
 compile:
 	g++ FileGenerator.cpp -o filegenerator -I . -std=c++17
 	g++ ObjectInterface.cpp UserInterface.cpp EvansMap.cpp -o userinterface -I . -std=c++17
-	g++ Test.cpp -o test -I . -std=c++17
+	g++ compare.cpp -o compare -I . -std=c++17
 
+
+clean:
+	rm *.txt
 
 clean_compiled:
-	rm *.o a.out userinterface test filegenerator mariosbst evansmap objectinterface userinterface
+	rm *.o a.out userinterface compare filegenerator mariosbst evansmap objectinterface userinterface

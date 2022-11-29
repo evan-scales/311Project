@@ -1,6 +1,6 @@
 # ignore cpp executables
 userinterface 
-test 
+compare 
 filegenerator 
 mariosbst
 evansmap 

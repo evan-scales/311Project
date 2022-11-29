@@ -35,17 +35,17 @@ public:
         switch (op->op) {
             case 'I':
                 if (insert(op->key, op->value)) {
-                    return "Ok Inserting " + to_string(op->key) + " " + op->value;
+                    return "OK";
                 } else {
-                    return "Fail Inserting " + to_string(op->key) + " " + op->value;
+                    return "Fail";
                 }
             case 'L':
                 return get(op->key);
             case 'D':
                 if (remove(op->key)) {
-                    return "Ok Deleting " + to_string(op->key);
+                    return "OK";
                 } else {
-                    return "Fail Deleting " + to_string(op->key);
+                    return "Fail " + to_string(op->key);
                 }
             default:
                 return "Fail";
