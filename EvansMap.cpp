@@ -1,8 +1,8 @@
 // Written by Evan Scales
 #include "./ObjectInterface.cpp"
 #include <list>
+#include <iostream>
 #include <pthread.h>
-
 
 using namespace std;
 

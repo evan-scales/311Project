@@ -1,18 +1,25 @@
-# ignore files without extensions (cpp executables)
-*
-!*/
-!*.*
+# ignore cpp executables
+userinterface 
+test 
+filegenerator 
+mariosbst
+evansmap 
+objectinterface 
+userinterface
 
 # ignore cpp object code
-.o
+*.o
+
+# ignore generated .txt files
+*.txt
 
 # include the makefile & readme
 !makefile
-!readme_instructions.txt
+!readme.txt
 
-# ignore generated .txt files
-.txt
+# misc include
+!output.txt
+!test.txt
 
 # ignore ds_store files
-.ds_store
-
+.DS_Store

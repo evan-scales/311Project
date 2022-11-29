@@ -1,16 +1,10 @@
-# please reference readme_instructions.md if you need help utilizing this
+# please reference README.txt if you need help utilizing this
 
-generatetxt: GenerateTxt.cpp
-	g++ -I . GenerateTxt.cpp -o generatetxt
+compile:
+	g++ FileGenerator.cpp -o filegenerator -I . -std=c++17
+	g++ ObjectInterface.cpp UserInterface.cpp EvansMap.cpp -o userinterface -I . -std=c++17
+	g++ Test.cpp -o test -I . -std=c++17
 
-userinterface:
-	g++ -Wall -std=c++17 -I . -lpthread EvansMap.cpp EvansBucket.cpp UserInterface.cpp ObjectInterface.cpp -o userinterface
 
-test:
-	g++ -I . Test.cpp -o test
-
-clear:
-	rm *.o a.out userinterface test generatetxt
-
-cleartxt:
-	rm *.txt
+clean_compiled:
+	rm *.o a.out userinterface test filegenerator mariosbst evansmap objectinterface userinterface
