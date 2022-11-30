@@ -27,7 +27,9 @@ int MARIOS_BST = 1;
 
 // change this to use buffer to read large files
 vector<opsStruct> getCommands(string fileName);
-float run(int object, string file, string outputFile, bool singleThreaded);  // Changed to float to return time
+float run(int object, string file, bool singleThreaded);  // change to not include outputFile
+void writeOutput(string fileName);
+// write method to write commands results to file
 bool CompareST(string arg1, string arg2);
 
 
@@ -64,13 +66,20 @@ int main(int argc, char const *argv[])
     // run the program 
     // Added singleThreaded boolean for testing purposes (default = false)
     if (compSingleThreaded == 0) {
-        run(structure, inputFile, outputFile, false);
+        run(structure, inputFile, false);
+        writeOutput(outputFile);
     } else {
-        float t1 = run(structure, inputFile, "ST_" + outputFile, true);  // Single-threaded (baseline)
+        // run this 10 times and average the results DONT WRITE TO FILE
+        float t1 = run(structure, inputFile, true);  // Single-threaded (baseline)
+        writeOutput("ST_" + outputFile);
 
+        mariosBST->clear(); // Still need to be implemented
         evansMap->clear();
         
-        float t2 = run(structure, inputFile, outputFile, false);  // Based on input (possibly multi-threaded)
+        // run this once then print the output using the new print output function
+        float t2 = run(structure, inputFile, false);  // Based on input (possibly multi-threaded)
+        writeOutput(outputFile);
+        // run un 9 more times and average the results
         CompareST(outputFile, ("ST_" + outputFile));
         float percent = (t1/t2 * 100) - 100;
         if (percent < 0)
@@ -103,10 +112,21 @@ bool CompareST(string arg1, string arg2) {
     return true;
 }
 
+void writeOutput(string fileName) {
+    // write to outputFile
+    ofstream out;
+    out.open(fileName, ios::out);
+    for (int i = 0; i < commands.size(); i++) {
+        out << commands[i].result << endl;
+    }
+    out.close();
+}
+
 // run the program with a given object inputfile and outputfile
 // will read the input file and run the commands with the number of specified threads
 // will write the output to the output file
-float run(int object, string file, string outputFile, bool singleThreaded) {
+float run(int object, string file, bool singleThreaded) {
+    commands.clear();
     // get the commands from the file
     commands = getCommands(file);
     int opsIndex = 0;
@@ -152,18 +172,6 @@ float run(int object, string file, string outputFile, bool singleThreaded) {
     // get the time
     std::chrono::duration<double> elapsed = finish - start;
     cout << "Elapsed time for " << maxNumThreads << " thread" << (maxNumThreads == 1 ? ": " : "s: ") << elapsed.count() << " s" << endl;
-
-    // write to outputFile
-    ofstream out;
-    out.open(outputFile, ios::out);
-    for (int i = 0; i < commands.size(); i++) {
-        // cout << commands[i].result << endl;
-        out << commands[i].result << endl;
-    }
-    out.close();
-
-    // clear the commands
-    commands.clear();
 
     return elapsed.count();
 }
