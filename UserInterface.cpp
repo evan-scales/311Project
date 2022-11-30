@@ -66,25 +66,39 @@ int main(int argc, char const *argv[])
     // run the program 
     // Added singleThreaded boolean for testing purposes (default = false)
     if (compSingleThreaded == 0) {
-        run(structure, inputFile, false);
+        float mt = run(structure, inputFile, false);
+        cout << "Elapsed time for " << inputFile << ": " << mt << " s" << endl;
         writeOutput(outputFile);
     } else {
         // run this 10 times and average the results DONT WRITE TO FILE
-        float t1 = run(structure, inputFile, true);  // Single-threaded (baseline)
+        float stavg = 0;
+        stavg += run(structure, inputFile, true);
         writeOutput("ST_" + outputFile);
+        for (int i = 0; i < 9; i++) {
+            stavg += run(structure, inputFile, true);
+        }
+        stavg /= 10;  // ST average
+        cout << "Average elapsed time for single-threaded baseline: " << stavg << " s" << endl;
 
         mariosBST->clear(); // Still need to be implemented
         evansMap->clear();
         
         // run this once then print the output using the new print output function
-        float t2 = run(structure, inputFile, false);  // Based on input (possibly multi-threaded)
+        float t2avg = 0;
+        t2avg += run(structure, inputFile, false);
         writeOutput(outputFile);
         // run un 9 more times and average the results
+        for (int i = 0; i < 9; i++) {
+            t2avg += run(structure, inputFile, false);  // Based on input (possibly multi-threaded)
+        }
+        t2avg /= 10;
+        cout << "Average elapsed time for " << inputFile << ": " << t2avg << " s" << endl;
+        // Compare MT and ST
         CompareST(outputFile, ("ST_" + outputFile));
-        float percent = (t1/t2 * 100) - 100;
+        float percent = (stavg/t2avg * 100) - 100;
         if (percent < 0)
             percent *= -1;
-        cout << "Test was " << percent << "% " << (t1 > t2 ? "faster" : "slower") << " than the single-threaded version" << endl;
+        cout << "Test was " << percent << "% " << (stavg > t2avg ? "faster" : "slower") << " than the single-threaded version" << endl;
     }
     return 0;
 }
@@ -171,7 +185,6 @@ float run(int object, string file, bool singleThreaded) {
 
     // get the time
     std::chrono::duration<double> elapsed = finish - start;
-    cout << "Elapsed time for " << maxNumThreads << " thread" << (maxNumThreads == 1 ? ": " : "s: ") << elapsed.count() << " s" << endl;
 
     return elapsed.count();
 }
