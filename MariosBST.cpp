@@ -10,20 +10,14 @@ using namespace std;
 class MariosBST : public ObjectInterface {
     private:
         struct node {
-            // Mutex for the node
-            pthread_mutex_t mutex;
-            // Integer value of node
-            int key;
-            // String value of node
-            string value;
-            // Children of node
-            node *left, *right;
+            pthread_mutex_t mutex; // Mutex for the node
+            int key; // Integer value of node
+            string value; // String value of node
+            node *left, *right; // Children of node
         };
 
-        // Mutex for the tree
-        pthread_mutex_t mutex;
-        // The root of the tree
-        node *root;
+        pthread_mutex_t mutex; // Mutex for the tree
+        node *root; // The root of the tree
 
         // Create a new node to insert into the tree
         node *makeNode(int key, string value) {
@@ -36,138 +30,137 @@ class MariosBST : public ObjectInterface {
         }
 
         // Returns the height of the overall subtree
-        int height(node *parent, node *child) {
-            int lh, rh;
-            if (child == NULL) {
-                pthread_mutex_unlock(&parent->mutex);
-                return 0;
-            }
-            pthread_mutex_lock(&child->mutex);
-            pthread_mutex_unlock(&parent->mutex);
-            lh = height(child, child->left);
-            pthread_mutex_lock(&child->mutex);
-            rh = height(child, child->right);
-            return 1 + (max(lh, rh));
-        }
+        // int height(node *parent, node *child) {
+        //     int lh, rh;
+        //     if (child == NULL) {
+        //         pthread_mutex_unlock(&parent->mutex);
+        //         return 0;
+        //     }
+        //     pthread_mutex_lock(&child->mutex);
+        //     pthread_mutex_unlock(&parent->mutex);
+        //     lh = height(child, child->left);
+        //     pthread_mutex_lock(&child->mutex);
+        //     rh = height(child, child->right);
+        //     return 1 + (max(lh, rh));
+        // }
 
         // Checks to see if the tree is balanced; that is, its left and right subtree heights have a difference of -1, 0 or 1
-        bool isBalanced(node *parent, node *child) {
-            int lh, rh;
-            bool lb, rb;
-            if (child == root) pthread_mutex_lock(&mutex);
-            if (root == NULL) {
-                pthread_mutex_unlock(&mutex);
-                return true;
-            }
-            if (child == NULL) {
-                pthread_mutex_unlock(&parent->mutex);
-                return true;
-            }
-            pthread_mutex_lock(&child->mutex);
-            if (parent) pthread_mutex_unlock(&parent->mutex);
-            else pthread_mutex_unlock(&mutex);
-            lh = height(child, child->left);
-            pthread_mutex_lock(&child->mutex);
-            rh = height(child, child->left);
-            pthread_mutex_lock(&child->mutex);
-            lb = isBalanced(child, child->left);
-            pthread_mutex_lock(&child->mutex);
-            rb = isBalanced(child, child->right);
-            if (abs(lh - rh) <= 1 && lb && rb) return true;
-            else return false;
-        }
+        // bool isBalanced(node *parent, node *child) {
+        //     int lh, rh;
+        //     bool lb, rb;
+        //     if (child == root) pthread_mutex_lock(&mutex);
+        //     if (root == NULL) {
+        //         pthread_mutex_unlock(&mutex);
+        //         return true;
+        //     }
+        //     if (child == NULL) {
+        //         pthread_mutex_unlock(&parent->mutex);
+        //         return true;
+        //     }
+        //     pthread_mutex_lock(&child->mutex);
+        //     if (parent) pthread_mutex_unlock(&parent->mutex);
+        //     else pthread_mutex_unlock(&mutex);
+        //     lh = height(child, child->left);
+        //     pthread_mutex_lock(&child->mutex);
+        //     rh = height(child, child->left);
+        //     pthread_mutex_lock(&child->mutex);
+        //     lb = isBalanced(child, child->left);
+        //     pthread_mutex_lock(&child->mutex);
+        //     rb = isBalanced(child, child->right);
+        //     if (abs(lh - rh) <= 1 && lb && rb) return true;
+        //     else return false;
+        // }
 
         // Finds the node in the tree that needs to be rotated
-        node *findCulprit (node *parent, node *child) {
-            int lh, rh;
-            node *lc, *rc;
-            if (child == root) pthread_mutex_lock(&mutex);
-            if (root == NULL) {
-                pthread_mutex_unlock(&mutex);
-                return NULL;
-            }
-            if (child == NULL) {
-                pthread_mutex_unlock(&parent->mutex);
-                return NULL;
-            }
-            pthread_mutex_lock(&child->mutex);
-            if (parent) pthread_mutex_unlock(&parent->mutex);
-            else pthread_mutex_unlock(&mutex);
-            lh = height(child, child->left);
-            pthread_mutex_lock(&child->mutex);
-            rh = height(child, child->left);
-            pthread_mutex_lock(&child->mutex);
-            lc = findCulprit(child, child->left);
-            pthread_mutex_lock(&child->mutex);
-            rc = findCulprit(child, child->right);
-            if (abs(lh - rh) > 1) return child;
-            else if (lc && !rc) return lc;
-            else if (!lc && rc) return rc;
-            else return NULL;
-        }
+        // node *findCulprit (node *parent, node *child) {
+        //     int lh, rh;
+        //     node *lc, *rc;
+        //     if (child == root) pthread_mutex_lock(&mutex);
+        //     if (root == NULL) {
+        //         pthread_mutex_unlock(&mutex);
+        //         return NULL;
+        //     }
+        //     if (child == NULL) {
+        //         pthread_mutex_unlock(&parent->mutex);
+        //         return NULL;
+        //     }
+        //     pthread_mutex_lock(&child->mutex);
+        //     if (parent) pthread_mutex_unlock(&parent->mutex);
+        //     else pthread_mutex_unlock(&mutex);
+        //     lh = height(child, child->left);
+        //     pthread_mutex_lock(&child->mutex);
+        //     rh = height(child, child->left);
+        //     pthread_mutex_lock(&child->mutex);
+        //     lc = findCulprit(child, child->left);
+        //     pthread_mutex_lock(&child->mutex);
+        //     rc = findCulprit(child, child->right);
+        //     if (abs(lh - rh) > 1) return child;
+        //     else if (lc && !rc) return lc;
+        //     else if (!lc && rc) return rc;
+        //     else return NULL;
+        // }
 
-        node *leftRotation(node *n) {
-            node *cul, *ret;
-            cul = n;
-            ret = cul->right;
-            cul->right = ret->left;
-            ret->left = cul;
-            pthread_mutex_unlock(&n->mutex);
-            return ret;
-        }
+        // node *leftRotation(node *n) {
+        //     node *cul, *ret;
+        //     cul = n;
+        //     ret = cul->right;
+        //     cul->right = ret->left;
+        //     ret->left = cul;
+        //     pthread_mutex_unlock(&n->mutex);
+        //     return ret;
+        // }
 
-        node *rightRotation(node *n) {
-            node *cul, *ret;
-            cul = n;
-            ret = cul->left;
-            cul->left = ret->right;
-            ret->right = cul;
-            pthread_mutex_unlock(&n->mutex);
-            return ret;
-        }
+        // node *rightRotation(node *n) {
+        //     node *cul, *ret;
+        //     cul = n;
+        //     ret = cul->left;
+        //     cul->left = ret->right;
+        //     ret->right = cul;
+        //     pthread_mutex_unlock(&n->mutex);
+        //     return ret;
+        // }
 
-        node *leftRightRotation(node *n) {
-            node *cul, *temp, *ret;
-            cul = n;
-            temp = n->left;
-            ret = n->left->right;
-            cul->left = ret->right;
-            temp->right = ret->left;
-            ret->right = cul;
-            ret->left = temp;
-            pthread_mutex_unlock(&n->mutex);
-            return ret;
-        }
+        // node *leftRightRotation(node *n) {
+        //     node *cul, *temp, *ret;
+        //     cul = n;
+        //     temp = n->left;
+        //     ret = n->left->right;
+        //     cul->left = ret->right;
+        //     temp->right = ret->left;
+        //     ret->right = cul;
+        //     ret->left = temp;
+        //     pthread_mutex_unlock(&n->mutex);
+        //     return ret;
+        // }
 
-        node *rightLeftRotation(node *n) {
-            node *cul, *temp, *ret;
-            cul = n;
-            temp = n->right;
-            ret = n->right->left;
-            cul->right = ret->left;
-            temp->left = ret->right;
-            ret->left = cul;
-            ret->right = temp;
-            pthread_mutex_unlock(&n->mutex);
-            return ret;
-        }
+        // node *rightLeftRotation(node *n) {
+        //     node *cul, *temp, *ret;
+        //     cul = n;
+        //     temp = n->right;
+        //     ret = n->right->left;
+        //     cul->right = ret->left;
+        //     temp->left = ret->right;
+        //     ret->left = cul;
+        //     ret->right = temp;
+        //     pthread_mutex_unlock(&n->mutex);
+        //     return ret;
+        // }
 
         // Balances the tree. Based on various subheights, a different rotation are performed on the culprit.
-        node *balanceTree(node *culprit) {
-            int culLH = height(culprit, culprit->left);
-            int culRH = height(culprit, culprit->right);
-            int lcLH = height(culprit->left, culprit->left->left);
-            int lcRH = height(culprit->left, culprit->left->right);
-            int rcLH = height(culprit->right, culprit->right->left);
-            int rcRH = height(culprit->right, culprit->right->right);
-            pthread_mutex_lock(&culprit->mutex);
-            if (culLH - culRH == -2 && rcLH - rcRH == -1) return leftRotation(culprit);
-            else if (culLH - culRH == 2 && lcLH - lcRH == 1) return rightRotation(culprit);
-            else if (culLH - culRH == 2 && lcLH - lcRH == -1) return leftRightRotation(culprit);
-            else if (culLH - culRH == -2 && rcLH - rcRH == 1) return rightLeftRotation(culprit);
-            else return culprit;
-        }
-
+        // node *balanceTree(node *culprit) {
+        //     int culLH = height(culprit, culprit->left);
+        //     int culRH = height(culprit, culprit->right);
+        //     int lcLH = height(culprit->left, culprit->left->left);
+        //     int lcRH = height(culprit->left, culprit->left->right);
+        //     int rcLH = height(culprit->right, culprit->right->left);
+        //     int rcRH = height(culprit->right, culprit->right->right);
+        //     pthread_mutex_lock(&culprit->mutex);
+        //     if (culLH - culRH == -2 && rcLH - rcRH == -1) return leftRotation(culprit);
+        //     else if (culLH - culRH == 2 && lcLH - lcRH == 1) return rightRotation(culprit);
+        //     else if (culLH - culRH == 2 && lcLH - lcRH == -1) return leftRightRotation(culprit);
+        //     else if (culLH - culRH == -2 && rcLH - rcRH == 1) return rightLeftRotation(culprit);
+        //     else return culprit;
+        // }
 
         // Because removing the root is a special operation, it has its own method.
         bool removeRoot() {
@@ -211,13 +204,21 @@ class MariosBST : public ObjectInterface {
                     minimum = minimum->left;
                 }
             }
-            if (isBalanced(NULL, root)) return true;
-            else {
-                node *culprit = findCulprit(NULL, root);
-                if (culprit == root) root = balanceTree(root);
-                else culprit = balanceTree(culprit);
-                return true;
-            }
+            // if (isBalanced(NULL, root)) return true;
+            // else {
+            //     node *culprit = findCulprit(NULL, root);
+            //     if (culprit == root) root = balanceTree(root);
+            //     else culprit = balanceTree(culprit);
+            //     return true;
+            // }
+        }
+
+        void clearNodes(node *n) {
+            if (n == NULL) return;
+            clearNodes(n->left);
+            clearNodes(n->right);
+            pthread_mutex_destroy(&n->mutex);
+            delete n;
         }
 
     public:
@@ -228,8 +229,6 @@ class MariosBST : public ObjectInterface {
         ~MariosBST() {
             pthread_mutex_destroy(&mutex);
         }
-
-        void clear() { }
 
         string runOp(struct opsStruct *op) { 
             // pthread_mutex_lock(&locks[hsh(op->key)]);
@@ -271,13 +270,13 @@ class MariosBST : public ObjectInterface {
                     if (current->left == NULL) {
                         current->left = makeNode(key, value);
                         pthread_mutex_unlock(&current->mutex);
-                        break;
+                        return true;
                     } else next = current->left;
                 } else if (key > current->key) {
                     if (current->right == NULL) {
                         current->right = makeNode(key, value);
                         pthread_mutex_unlock(&current->mutex);
-                        break;
+                        return true;
                     } else next = current->right;
                 } else {
                     pthread_mutex_unlock(&current->mutex);
@@ -287,13 +286,13 @@ class MariosBST : public ObjectInterface {
                 pthread_mutex_unlock(&current->mutex);
                 current = next;
             }
-            if (isBalanced(NULL, root)) return true;
-            else {
-                node *culprit = findCulprit(NULL, root);
-                if (culprit = root) root = balanceTree(root);
-                else culprit = balanceTree(culprit);
-                return true;
-            }
+            // if (isBalanced(NULL, root)) return true;
+            // else {
+            //     node *culprit = findCulprit(NULL, root);
+            //     if (culprit = root) root = balanceTree(root);
+            //     else culprit = balanceTree(culprit);
+            //     return true;
+            // }
         }
 
         // Removes a node.
@@ -329,17 +328,17 @@ class MariosBST : public ObjectInterface {
                         if (current = previous->left) previous->left = NULL;
                         else previous->right = NULL;
                         if (previous) pthread_mutex_unlock(&previous->mutex);
-                        break;
+                        return true;
                     } else if (current->left == NULL) {
                         if (current = previous->left) previous->left = move(current->right);
                         else previous->right = move(current->right);
                         if (previous) pthread_mutex_unlock(&previous->mutex);
-                        break;
+                        return true;
                     } else if (current->right == NULL) {
                         if (current = previous->left) previous->left = move(current->left);
                         else previous->right = move(current->left);
                         if (previous) pthread_mutex_unlock(&previous->mutex);
-                        break;
+                        return true;
                     } else {
                         node *minPrevious = current;
                         node *minimum = current->left;
@@ -358,7 +357,7 @@ class MariosBST : public ObjectInterface {
                                     pthread_mutex_unlock(&minPrevious->mutex);
                                 }
                                 pthread_mutex_unlock(&current->mutex);
-                                break;
+                                return true;
                             }
                             pthread_mutex_lock(&minimum->left->mutex);
                             if (minPrevious != current) {
@@ -367,7 +366,6 @@ class MariosBST : public ObjectInterface {
                             minPrevious = minimum;
                             minimum = minimum->left;
                         }
-                        break;
                     }
                 }
                 pthread_mutex_lock(&next->mutex);
@@ -375,13 +373,13 @@ class MariosBST : public ObjectInterface {
                 previous = current;
                 current = next;
             }
-            if (isBalanced(NULL, root)) return true;
-            else {
-                node *culprit = findCulprit(NULL, root);
-                if (culprit == root) root = balanceTree(root);
-                else culprit = balanceTree(culprit);
-                return true;
-            }
+            // if (isBalanced(NULL, root)) return true;
+            // else {
+            //     node *culprit = findCulprit(NULL, root);
+            //     if (culprit == root) root = balanceTree(root);
+            //     else culprit = balanceTree(culprit);
+            //     return true;
+            // }
         }
 
         // Retrives the string value of a node based on its key.
@@ -416,7 +414,12 @@ class MariosBST : public ObjectInterface {
             }
         }
 
-        void print() {
-
+        void clear() {
+            if (root == NULL) return;
+            clearNodes(root);
+            root = NULL;
         }
+
+        void print() {}
+
 };
