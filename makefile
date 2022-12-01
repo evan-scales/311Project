@@ -15,27 +15,23 @@ clean_compiled:
 # hashmap unit tests
 
 test1t_hash:
-	./filegenerator test 250 100 500 1
+	./filegenerator test 500 250 750 1
 	./userinterface test.txt test_out.txt 0 1
 
 test2t_hash:
-	./filegenerator test 250 100 500 2
+	./filegenerator test 500 250 750 2
 	./userinterface test.txt test_out.txt 0 1
 
 test4t_hash:
-	./filegenerator test 250 100 500 4
+	./filegenerator test 500 250 750 4
 	./userinterface test.txt test_out.txt 0 1
 
 test8t_hash:
-	./filegenerator test 250 100 500 8
+	./filegenerator test 500 250 750 8
 	./userinterface test.txt test_out.txt 0 1
 
 test0t_hash:
-	./filegenerator test 250 100 500 0
-	./userinterface test.txt test_out.txt 0 1
-
-testmedium_hash:
-	./filegenerator test 400 100 500 4
+	./filegenerator test 500 250 750 0
 	./userinterface test.txt test_out.txt 0 1
 
 testlarge_hash:
@@ -44,6 +40,11 @@ testlarge_hash:
 
 testverylarge_hash:
 	./filegenerator test 7500 2500 15000 4
+	./userinterface test.txt test_out.txt 0 1
+
+testmassive_hash:
+	# This is going to take a while.
+	./filegenerator test 75000 25000 150000 4
 	./userinterface test.txt test_out.txt 0 1
 
 testempty_hash:
@@ -55,27 +56,23 @@ testempty_hash:
 # hashmap unit tests
 
 test1t_bst:
-	./filegenerator test 250 100 500 1
+	./filegenerator test 500 250 750 1
 	./userinterface test.txt test_out.txt 1 1
 
 test2t_bst:
-	./filegenerator test 250 100 500 2
+	./filegenerator test 500 250 750 2
 	./userinterface test.txt test_out.txt 1 1
 
 test4t_bst:
-	./filegenerator test 250 100 500 4
+	./filegenerator test 500 250 750 4
 	./userinterface test.txt test_out.txt 1 1
 
 test8t_bst:
-	./filegenerator test 250 100 500 8
+	./filegenerator test 500 250 750 8
 	./userinterface test.txt test_out.txt 1 1
 
 test0t_bst:
-	./filegenerator test 250 100 500 0
-	./userinterface test.txt test_out.txt 1 1
-
-testmedium_bst:
-	./filegenerator test 400 100 500 4
+	./filegenerator test 500 250 750 0
 	./userinterface test.txt test_out.txt 1 1
 
 testlarge_bst:
@@ -84,6 +81,11 @@ testlarge_bst:
 
 testverylarge_bst:
 	./filegenerator test 7500 2500 15000 4
+	./userinterface test.txt test_out.txt 1 1
+
+testmassive_bst:
+	# This is going to take a while.
+	./filegenerator test 75000 25000 150000 4
 	./userinterface test.txt test_out.txt 1 1
 
 testempty_bst:
