@@ -196,29 +196,30 @@ float run(int object, string file, bool singleThreaded) {
 // will change to use a buffer to handle files larger than memory
 vector<opsStruct> getCommands(string fileName) {
     vector<opsStruct> commands;
-    std::ifstream in(fileName);
-    string line = "";
-    if (in.is_open()) {
-        while (getline(in, line)) {
+
+    // Use a buffer
+    size_t bufferSize = 1024;
+    char buffer[bufferSize];
+    ifstream file(fileName);
+    while (file.good()) {
+        file.getline(buffer, bufferSize);
+        string line(buffer);
+        if (line.length() > 0) {
+            opsStruct command;
+            
             char c = line[0];
             int space1 = line.find(" ");
             int space2 = line.find(" ", space1 + 1);
 
             int key;
             string value;
-            // check if there is a second space
+
             if (space2 != -1) {
                 key = stoi(line.substr(space1 + 1, space2 - space1 - 1));
-
                 string badValue = line.substr(space2 + 1);
-                // remove the quotes around the value
-                // value = value.substr(1, value.length() - 2);
-                // remove the first and last character
-                // value = value.substr(1, value.length() - 2);
                 for (int i = 1; i < badValue.length() - 1; i++) {
                     value += badValue[i];
                 }
-                // cout << "value: " << value << endl;
             } else {
                 key = stoi(line.substr(space1 + 1));
                 value = "";
@@ -226,10 +227,8 @@ vector<opsStruct> getCommands(string fileName) {
             opsStruct op = {c, key, value};
             commands.push_back(op);
         }
-    } else {
-        cout << "Unable to open file" << endl;
     }
-    in.close();
+    file.close();
     return commands;
 }
 
