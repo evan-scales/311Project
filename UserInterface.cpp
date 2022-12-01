@@ -27,9 +27,8 @@ int MARIOS_BST = 1;
 
 // change this to use buffer to read large files
 vector<opsStruct> getCommands(string fileName);
-float run(int object, string file, bool singleThreaded);  // change to not include outputFile
+float run(int object, string file, bool singleThreaded); 
 void writeOutput(string fileName);
-// write method to write commands results to file
 bool CompareST(string arg1, string arg2);
 
 
@@ -150,6 +149,10 @@ float run(int object, string file, bool singleThreaded) {
         maxNumThreads = commands[opsIndex].key;
     else
         maxNumThreads = 1;
+
+    if (maxNumThreads < 1) {
+        maxNumThreads = 1;
+    }
         
     commands[opsIndex].result = "Using " + to_string(commands[opsIndex].key) + " threads";
     commands[opsIndex].object = object;
