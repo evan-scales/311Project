@@ -41,6 +41,9 @@ make test8t_hash
 ### To test a zero-threaded example (should default to 1 thread), run:
 make test0t_hash
 
+### To test a ridiculously-many-threaded example (should default to 32 threads), run:
+make test64t_hash
+
 ### To test a large (2500 commands) file on four threads, run:
 make testlarge_hash
 
