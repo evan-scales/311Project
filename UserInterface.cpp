@@ -152,9 +152,11 @@ float run(int object, string file, bool singleThreaded) {
 
     if (maxNumThreads < 1) {
         maxNumThreads = 1;
+    } else if (maxNumThreads > 32) {
+        maxNumThreads = 32;
     }
         
-    commands[opsIndex].result = "Using " + to_string(commands[opsIndex].key) + " threads";
+    commands[opsIndex].result = "Using " + to_string(maxNumThreads) + " threads";
     commands[opsIndex].object = object;
     opsIndex++;
 
