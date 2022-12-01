@@ -230,29 +230,6 @@ class MariosBST : public ObjectInterface {
             pthread_mutex_destroy(&mutex);
         }
 
-        string runOp(struct opsStruct *op) { 
-            // pthread_mutex_lock(&locks[hsh(op->key)]);
-            // std::cout << "locked bucket " << hsh(op->key) << " for " << op->op << " " << op->value << std::endl;
-            switch (op->op) {
-                case 'I':
-                    if (insert(op->key, op->value)) {
-                        return "OK";
-                    } else {
-                        return "Fail";
-                    }
-                case 'L':
-                    return get(op->key);
-                case 'D':
-                    if (remove(op->key)) {
-                        return "OK";
-                    } else {
-                        return "Fail";
-                    }
-                default:
-                    return "Fail";
-            }
-        }
-
         // Inserts a node.
         bool insert(int key, string value) {
             pthread_mutex_lock(&mutex);
@@ -325,17 +302,17 @@ class MariosBST : public ObjectInterface {
                     } else next = current->right;
                 } else {
                     if (current->left == NULL && current->right == NULL) {
-                        if (current = previous->left) previous->left = NULL;
+                        if (current == previous->left) previous->left = NULL;
                         else previous->right = NULL;
                         if (previous) pthread_mutex_unlock(&previous->mutex);
                         return true;
                     } else if (current->left == NULL) {
-                        if (current = previous->left) previous->left = move(current->right);
+                        if (current == previous->left) previous->left = move(current->right);
                         else previous->right = move(current->right);
                         if (previous) pthread_mutex_unlock(&previous->mutex);
                         return true;
                     } else if (current->right == NULL) {
-                        if (current = previous->left) previous->left = move(current->left);
+                        if (current == previous->left) previous->left = move(current->left);
                         else previous->right = move(current->left);
                         if (previous) pthread_mutex_unlock(&previous->mutex);
                         return true;
@@ -348,7 +325,7 @@ class MariosBST : public ObjectInterface {
                             if (minimum->left == NULL) {
                                 current->key = minimum->key;
                                 current->value = minimum->value;
-                                if (minPrevious == NULL) {
+                                if (minPrevious == current) {
                                     if (minimum->right == NULL) minPrevious->right = NULL;
                                     else minPrevious->right = move(minimum->right);
                                 } else {
@@ -418,6 +395,29 @@ class MariosBST : public ObjectInterface {
             if (root == NULL) return;
             clearNodes(root);
             root = NULL;
+        }
+
+        string runOp(struct opsStruct *op) { 
+            // pthread_mutex_lock(&locks[hsh(op->key)]);
+            // std::cout << "locked bucket " << hsh(op->key) << " for " << op->op << " " << op->value << std::endl;
+            switch (op->op) {
+                case 'I':
+                    if (insert(op->key, op->value)) {
+                        return "OK";
+                    } else {
+                        return "Fail";
+                    }
+                case 'L':
+                    return get(op->key);
+                case 'D':
+                    if (remove(op->key)) {
+                        return "OK";
+                    } else {
+                        return "Fail";
+                    }
+                default:
+                    return "Fail";
+            }
         }
 
         void print() {}
