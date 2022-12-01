@@ -26,19 +26,19 @@ make clean
 ## There are several included unit tests to test standard and edge cases.
 ### *NOTE: replace "_hash" with "_bst" to run the equivalent test on the BST.*
 
-### To test a single threaded example on the hashmap, run:
+### To test a single threaded example, run:
 make test1t_hash
 
-### To test a two-threaded example on the hashmap, run:
+### To test a two-threaded example, run:
 make test2t_hash
 
-### To test a four-threaded example on the hashmap, run:
+### To test a four-threaded example, run:
 make test4t_hash
 
-### To test an eight-threaded example on the hashmap, run:
+### To test an eight-threaded example, run:
 make test8t_hash
 
-### To test a zero-threaded example on the hashmap (should default to 1), run:
+### To test a zero-threaded example (should default to 1 thread), run:
 make test0t_hash
 
 ### To test a large (2500 commands) file on four threads, run:
@@ -52,3 +52,10 @@ make testmassive_hash
 
 ### To test an empty (0 commands) file on four threads, run:
 make testempty_hash
+
+# TESTING LARGE (>1MB) FILES
+## Please keep in mind that the standard UserInterface test (setting the fourth argument to 1) takes a very long time on large files, since it takes the average of 10 single-threaded runs against 10 custom-threaded runs. To test large files without waiting several minutes, run these two commands instead:
+./userinterface <gianttest.txt> <gianttest_out.txt> <0/1> 0
+
+./compare gianttest_out.txt gianttest_expected.txt
+
