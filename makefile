@@ -33,6 +33,10 @@ test8t_hash:
 test0t_hash:
 	./filegenerator test 500 250 750 0
 	./userinterface test.txt test_out.txt 0 1
+	
+test64t_hash:
+	./filegenerator test 500 250 750 64
+	./userinterface test.txt test_out.txt 0 1
 
 testlarge_hash:
 	./filegenerator test 750 250 1500 4
@@ -73,6 +77,10 @@ test8t_bst:
 
 test0t_bst:
 	./filegenerator test 500 250 750 0
+	./userinterface test.txt test_out.txt 1 1
+	
+test64t_hash:
+	./filegenerator test 500 250 750 64
 	./userinterface test.txt test_out.txt 1 1
 
 testlarge_bst:
