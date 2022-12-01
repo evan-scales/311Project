@@ -41,14 +41,14 @@ make test8t_hash
 ### To test a zero-threaded example on the hashmap (should default to 1), run:
 make test0t_hash
 
-### To test a medium-sized (1000 commands) file on four threads, run:
-make testmedium_hash
-
 ### To test a large (2500 commands) file on four threads, run:
 make testlarge_hash
 
 ### To test a very large (25000 commands) file on four threads, run:
 make testverylarge_hash
+
+### To test a massive (250000 commands) file on four threads, run:
+make testmassive_hash
 
 ### To test an empty (0 commands) file on four threads, run:
 make testempty_hash
