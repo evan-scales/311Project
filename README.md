@@ -62,3 +62,18 @@ make testempty_hash
 
 ./compare gianttest_out.txt gianttest_expected.txt
 
+# Evans Approach
+
+The first issue was reading in the commands that the data structure will execute. The input file is read, then it is read line by line to create an 
+
+opsStruct for each command. Each opsStruct has a key, the operation to perform, the value, and result. The result variable was added to keep the general 
+
+order of the executed operations. The run method in UserInterface will read the first command for the number of threads, then while there are still 
+
+commands to execute a the specified number of threads will be created to run each operation. Each data structure has a runOperation method that will 
+
+insert, delete, or lookup depending on the command and return the result. Finally inside the thread function the result will be set in the appropriate 
+
+opsStruct. Finally to write the output it will simply go through all the opsStruct and print the result of each operation to the specified file.
+
+

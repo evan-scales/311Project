@@ -191,8 +191,6 @@ float run(int object, string file, bool singleThreaded) {
         for (int i = 0; i < numThreads; i++) {
             commands[opsIndex].object = object;
             pthread_create(&threads[i], NULL, &threadFunction, (void *) &commands[opsIndex]);
-            // sleep for 1 microsecond to allow the threads to be created
-            std::this_thread::sleep_for(std::chrono::microseconds(1));
             opsIndex++;
         }
 
