@@ -55,6 +55,10 @@ int main(int argc, char const *argv[])
     // get the file name from the command line
     string inputFile = argv[1];
     string outputFile = argv[2];
+    // Get the expected output file name
+    // if input file is test.txt then expected output file is test_expected.txt
+    string expectedOutputFile = inputFile.substr(0, inputFile.find_last_of(".")) + "_expected.txt";
+   
     int structure = std::stoi(argv[3]);  // 0 = Hashmap, 1 = BST
     int compSingleThreaded = std::stoi(argv[4]);  // 0 = Don't compare, 1 = Do compare performance to single threaded version
     if (structure != 1 && structure != 0)
@@ -71,16 +75,14 @@ int main(int argc, char const *argv[])
     } else {
         // run this 10 times and average the results DONT WRITE TO FILE
         float stavg = 0;
-        stavg += run(structure, inputFile, true);
-        writeOutput("ST_" + outputFile);
-        for (int i = 0; i < 9; i++) {
+        // stavg += run(structure, inputFile, true);
+        // writeOutput("ST_" + outputFile);
+        for (int i = 0; i < 10; i++) {
             stavg += run(structure, inputFile, true);
         }
         stavg /= 10;  // ST average
         cout << "Average elapsed time for single-threaded baseline: " << stavg << " s" << endl;
 
-        mariosBST->clear(); // Still need to be implemented
-        evansMap->clear();
         
         // run this once then print the output using the new print output function
         float t2avg = 0;
@@ -93,7 +95,7 @@ int main(int argc, char const *argv[])
         t2avg /= 10;
         cout << "Average elapsed time for " << inputFile << ": " << t2avg << " s" << endl;
         // Compare MT and ST
-        CompareST(outputFile, ("ST_" + outputFile));
+        CompareST(outputFile, expectedOutputFile);
         float percent = (stavg/t2avg * 100) - 100;
         if (percent < 0)
             percent *= -1;
@@ -110,6 +112,13 @@ bool CompareST(string arg1, string arg2) {
     int count = 1;
     string compare1, compare2;
     while (file1.good()) {
+        // skip the first line
+        if (count == 1) {
+            getline(file1, compare1);
+            getline(file2, compare2);
+            count++;
+            continue;
+        }
         file1 >> compare1;
         file2 >> compare2;
         if (compare1 != compare2) {
@@ -143,6 +152,12 @@ float run(int object, string file, bool singleThreaded) {
     // get the commands from the file
     commands = getCommands(file);
     int opsIndex = 0;
+
+    mariosBST->clear(); // Still need to be implemented
+    evansMap->clear();
+
+    int mapSize = commands.size() * .30;
+    evansMap = new EvansMap(mapSize);
 
     int maxNumThreads;
     if (!singleThreaded)

@@ -79,7 +79,7 @@ test0t_bst:
 	./filegenerator test 500 250 750 0
 	./userinterface test.txt test_out.txt 1 1
 	
-test64t_hash:
+test64t_bst:
 	./filegenerator test 500 250 750 64
 	./userinterface test.txt test_out.txt 1 1
 
