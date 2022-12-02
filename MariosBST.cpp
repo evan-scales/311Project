@@ -10,24 +10,31 @@ using namespace std;
 class MariosBST : public ObjectInterface {
     private:
         struct node {
-            pthread_mutex_t mutex; // Mutex for the node
+            // pthread_mutex_t mutex; // Mutex for the node
             int key; // Integer value of node
             string value; // String value of node
             node *left, *right; // Children of node
+
+            node(int key, string value) {
+                this->key = key;
+                this->value = value;
+                this->left = this->right = nullptr;
+            }
         };
 
         pthread_mutex_t mutex; // Mutex for the tree
         node *root; // The root of the tree
+        // bool opComplete; // Check to see if an operation is completed
 
         // Create a new node to insert into the tree
-        node *makeNode(int key, string value) {
-            node *n = new node();
-            pthread_mutex_init(&n->mutex, NULL);
-            n->key = key;
-            n->value = value;
-            n->left = n->right = NULL;
-            return n;
-        }
+        // node *makeNode(int key, string value) {
+        //     node *n = new node();
+        //     // pthread_mutex_init(&n->mutex, NULL);
+        //     n->key = key;
+        //     n->value = value;
+        //     n->left = n->right = nullptr;
+        //     return n;
+        // }
 
         // Returns the height of the overall subtree
         // int height(node *parent, node *child) {
@@ -163,67 +170,129 @@ class MariosBST : public ObjectInterface {
         // }
 
         // Because removing the root is a special operation, it has its own method.
-        bool removeRoot() {
-            if (root->left == NULL && root->right == NULL) {
-                pthread_mutex_unlock(&root->mutex);
-                root = NULL;
-                pthread_mutex_unlock(&mutex);
-                return true;
-            } else if (root->left == NULL) {
-                root = move(root->right);
-                pthread_mutex_unlock(&mutex);
-                return true;
-            } else if (root->right == NULL) {
-                root = move(root->left);
-                pthread_mutex_unlock(&mutex);
-                return true;
-            } else {
-                node *minPrevious = root;
-                node *minimum = root->left;
-                pthread_mutex_lock(&minimum->mutex);
-                while (true) {
-                    if (minimum->left == NULL) {
-                        root->key = minimum->key;
-                        root->value = minimum->value;
-                        if (minPrevious == NULL) {
-                            if (minimum->right == NULL) minPrevious->right = NULL;
-                            else minPrevious->right = move(minimum->right);
-                        } else {
-                            if (minimum->right == NULL) minPrevious->left = NULL;
-                            else minPrevious->left = move(minimum->right);
-                            pthread_mutex_unlock(&minPrevious->mutex);
-                        }
-                        pthread_mutex_unlock(&root->mutex);
-                        return true;
-                    }
-                    pthread_mutex_lock(&minimum->left->mutex);
-                    if (minPrevious != root) {
-                        pthread_mutex_unlock(&minPrevious->mutex);
-                    }
-                    minPrevious = minimum;
-                    minimum = minimum->left;
-                }
-            }
-            // if (isBalanced(NULL, root)) return true;
-            // else {
-            //     node *culprit = findCulprit(NULL, root);
-            //     if (culprit == root) root = balanceTree(root);
-            //     else culprit = balanceTree(culprit);
-            //     return true;
-            // }
-        }
+        // bool removeRoot() {
+        //     if (root->left == NULL && root->right == NULL) {
+        //         // pthread_mutex_unlock(&root->mutex);
+        //         root = NULL;
+        //         pthread_mutex_unlock(&mutex);
+        //         return true;
+        //     } else if (root->left == NULL) {
+        //         root = move(root->right);
+        //         pthread_mutex_unlock(&mutex);
+        //         return true;
+        //     } else if (root->right == NULL) {
+        //         root = move(root->left);
+        //         pthread_mutex_unlock(&mutex);
+        //         return true;
+        //     } else {
+        //         node *minPrevious = root;
+        //         node *minimum = root->right;
+        //         // pthread_mutex_lock(&minimum->mutex);
+        //         pthread_mutex_unlock(&mutex);
+        //         while (true) {
+        //             if (minimum->left == NULL) {
+        //                 root->key = minimum->key;
+        //                 root->value = minimum->value;
+        //                 if (minPrevious == root) {
+        //                     if (minimum->right == NULL) minPrevious->right = NULL;
+        //                     else minPrevious->right = move(minimum->right);
+        //                 } else {
+        //                     if (minimum->right == NULL) minPrevious->left = NULL;
+        //                     else minPrevious->left = move(minimum->right);
+        //                     // pthread_mutex_unlock(&minPrevious->mutex);
+        //                 }
+        //                 // pthread_mutex_unlock(&root->mutex);
+        //                 // pthread_mutex_unlock(&mutex);
+        //                 return true;
+        //             }
+        //             // pthread_mutex_lock(&minimum->left->mutex);
+        //             // if (minPrevious != root) {
+        //             //     pthread_mutex_unlock(&minPrevious->mutex);
+        //             // }
+        //             minPrevious = minimum;
+        //             minimum = minimum->left;
+        //         }
+        //     }
+        //     // if (isBalanced(NULL, root)) return true;
+        //     // else {
+        //     //     node *culprit = findCulprit(NULL, root);
+        //     //     if (culprit == root) root = balanceTree(root);
+        //     //     else culprit = balanceTree(culprit);
+        //     //     return true;
+        //     // }
+        // }
+
+        // void insertNode(node *n, int key, string value) {
+        //     if (n == NULL) {
+        //         opComplete = true;
+        //         pthread_mutex_unlock(&mutex);
+        //         n = makeNode(key,value);
+        //     }
+        //     else if (key < n->key) n->left = insertNode(n->left,key,value);
+        //     else if (key > n->key) n->right = insertNode(n->right,key,value);
+        //     else {
+        //         pthread_mutex_unlock(&mutex);
+        //         return n;
+        //     }
+        // }
+
+        // node *findMinimum(node *n) {
+        //     if (n == NULL) return NULL;
+        //     else if (n->left == NULL) return n;
+        //     else return findMinimum(n->left);
+        // }
+
+        // node *removeNode(node *n, int key) {
+        //     if (n == NULL) {
+        //         pthread_mutex_unlock(&mutex);
+        //         return n;
+        //     }
+        //     else if (key < n->key) n->left = removeNode(n->left,key);
+        //     else if (key > n->key) n->right = removeNode(n->right,key);
+        //     else {
+        //         if (n->left == NULL) {
+        //             opComplete = true;
+        //             pthread_mutex_unlock(&mutex);
+        //             return n->right;
+        //         } else if (n->right == NULL) {
+        //             opComplete = true;
+        //             pthread_mutex_unlock(&mutex);
+        //             return n->left;
+        //         } else {
+        //             node *temp = findMinimum(n->right);
+        //             n->key = temp->key;
+        //             n->value = temp->value;
+        //             n->right = removeNode(n->right,temp->key);
+        //         }
+        //     }
+        //     pthread_mutex_unlock(&mutex);
+        //     return n;
+        // }
+
+        // string getNode(node *n, int key) {
+        //     if (n == NULL) {
+        //         pthread_mutex_unlock(&mutex);
+        //         return "No " + to_string(key);
+        //     }
+        //     else if (key < n->key) return getNode(n->left,key);
+        //     else if (key > n->key) return getNode(n->right,key);
+        //     else {
+        //         pthread_mutex_unlock(&mutex);
+        //         return n->value;
+        //     }
+        // }
 
         void clearNodes(node *n) {
-            if (n == NULL) return;
+            if (n == nullptr) return;
             clearNodes(n->left);
             clearNodes(n->right);
-            pthread_mutex_destroy(&n->mutex);
-            delete n;
+            // pthread_mutex_destroy(&n->mutex);
+            n = nullptr;
         }
 
     public:
         MariosBST() {
-            pthread_mutex_init(&mutex, NULL);
+            pthread_mutex_init(&mutex, nullptr);
         }
 
         ~MariosBST() {
@@ -233,36 +302,39 @@ class MariosBST : public ObjectInterface {
         // Inserts a node.
         bool insert(int key, string value) {
             pthread_mutex_lock(&mutex);
-            if (root == NULL) {
-                root = makeNode(key, value);
+            if (root == nullptr) {
+                root = new node(key,value);
                 pthread_mutex_unlock(&mutex);
                 return true;
             }
-            pthread_mutex_lock(&root->mutex);
-            pthread_mutex_unlock(&mutex);
+            // pthread_mutex_lock(&root->mutex);
+            // pthread_mutex_unlock(&mutex);
             node *current = root;
-            node *next = NULL;
-            while (true) {
-                if (key < current->key) {
-                    if (current->left == NULL) {
-                        current->left = makeNode(key, value);
-                        pthread_mutex_unlock(&current->mutex);
-                        return true;
-                    } else next = current->left;
-                } else if (key > current->key) {
-                    if (current->right == NULL) {
-                        current->right = makeNode(key, value);
-                        pthread_mutex_unlock(&current->mutex);
-                        return true;
-                    } else next = current->right;
-                } else {
-                    pthread_mutex_unlock(&current->mutex);
-                    return false;
-                }
-                pthread_mutex_lock(&next->mutex);
-                pthread_mutex_unlock(&current->mutex);
-                current = next;
-            }
+            node *previous = nullptr;
+            // while (true) {
+            //     if (key < current->key) {
+            //         if (current->left == nullptr) {
+            //             current->left = new node(key,value);
+            //             // pthread_mutex_unlock(&current->mutex);
+            //             pthread_mutex_unlock(&mutex);
+            //             return true;
+            //         } else next = current->left;
+            //     } else if (key > current->key) {
+            //         if (current->right == nullptr) {
+            //             current->right = new node(key,value);
+            //             // pthread_mutex_unlock(&current->mutex);
+            //             pthread_mutex_unlock(&mutex);
+            //             return true;
+            //         } else next = current->right;
+            //     } else {
+            //         // pthread_mutex_unlock(&current->mutex);
+            //         pthread_mutex_unlock(&mutex);
+            //         return false;
+            //     }
+            //     // pthread_mutex_lock(&next->mutex);
+            //     // pthread_mutex_unlock(&current->mutex);
+            //     current = next;
+            // }
             // if (isBalanced(NULL, root)) return true;
             // else {
             //     node *culprit = findCulprit(NULL, root);
@@ -270,86 +342,114 @@ class MariosBST : public ObjectInterface {
             //     else culprit = balanceTree(culprit);
             //     return true;
             // }
+            // if (root) insertNode(root,key,value);
+            // else {
+            //     root = makeNode(key,value);
+            //     return true;
+            // }
+            while (current) {
+                if (key < current->key) {
+                    previous = current;
+                    current = current->left;
+                } else if (key > current->key) {
+                    previous = current;
+                    current = current->right;
+                } else {
+                    pthread_mutex_unlock(&mutex);
+                    return false;
+                }
+            }
+            if (key < previous->key) previous->left = new node(key,value);
+            else previous->right = new node(key,value);
+            pthread_mutex_unlock(&mutex);
+            return true;
         }
 
         // Removes a node.
         bool remove(int key) {
             pthread_mutex_lock(&mutex);
-            if (root == NULL) {
+            if (root == nullptr) {
                 pthread_mutex_unlock(&mutex);
                 return false;
             }
-            pthread_mutex_lock(&root->mutex);
-            if (root->key == key) {
-                return removeRoot();
-            }
-            pthread_mutex_unlock(&mutex);
+            // pthread_mutex_lock(&root->mutex);
+            // if (root->key == key) {
+            //     return removeRoot();
+            // }
+            // pthread_mutex_unlock(&mutex);
             node *current = root;
-            node *previous = NULL;
-            node *next = NULL;
-            while (true) {
-                if (key < current->key) {
-                    if (current->left == NULL) {
-                        pthread_mutex_unlock(&current->mutex);
-                        if (previous) pthread_mutex_unlock(&previous->mutex);
-                        return false;
-                    } else next = current->left;
-                } else if (key > current->key) {
-                    if (current->right == NULL) {
-                        pthread_mutex_unlock(&current->mutex);
-                        if (previous) pthread_mutex_unlock(&previous->mutex);
-                        return false;
-                    } else next = current->right;
-                } else {
-                    if (current->left == NULL && current->right == NULL) {
-                        if (current == previous->left) previous->left = NULL;
-                        else previous->right = NULL;
-                        if (previous) pthread_mutex_unlock(&previous->mutex);
-                        return true;
-                    } else if (current->left == NULL) {
-                        if (current == previous->left) previous->left = move(current->right);
-                        else previous->right = move(current->right);
-                        if (previous) pthread_mutex_unlock(&previous->mutex);
-                        return true;
-                    } else if (current->right == NULL) {
-                        if (current == previous->left) previous->left = move(current->left);
-                        else previous->right = move(current->left);
-                        if (previous) pthread_mutex_unlock(&previous->mutex);
-                        return true;
-                    } else {
-                        node *minPrevious = current;
-                        node *minimum = current->left;
-                        pthread_mutex_lock(&minimum->mutex);
-                        pthread_mutex_unlock(&previous->mutex);
-                        while (true) {
-                            if (minimum->left == NULL) {
-                                current->key = minimum->key;
-                                current->value = minimum->value;
-                                if (minPrevious == current) {
-                                    if (minimum->right == NULL) minPrevious->right = NULL;
-                                    else minPrevious->right = move(minimum->right);
-                                } else {
-                                    if (minimum->right == NULL) minPrevious->left = NULL;
-                                    else minPrevious->left = move(minimum->right);
-                                    pthread_mutex_unlock(&minPrevious->mutex);
-                                }
-                                pthread_mutex_unlock(&current->mutex);
-                                return true;
-                            }
-                            pthread_mutex_lock(&minimum->left->mutex);
-                            if (minPrevious != current) {
-                                pthread_mutex_unlock(&minPrevious->mutex);
-                            }
-                            minPrevious = minimum;
-                            minimum = minimum->left;
-                        }
-                    }
-                }
-                pthread_mutex_lock(&next->mutex);
-                if (previous) pthread_mutex_unlock(&previous->mutex);
-                previous = current;
-                current = next;
-            }
+            node *previous = nullptr;
+            // node *next = NULL;
+            // while (true) {
+            //     if (key < current->key) {
+            //         if (current->left == NULL) {
+            //             // pthread_mutex_unlock(&current->mutex);
+            //             // if (previous) pthread_mutex_unlock(&previous->mutex);
+            //             // pthread_mutex_unlock(&mutex);
+            //             return false;
+            //         } else next = current->left;
+            //     } else if (key > current->key) {
+            //         if (current->right == NULL) {
+            //             // pthread_mutex_unlock(&current->mutex);
+            //             // if (previous) pthread_mutex_unlock(&previous->mutex);
+            //             // pthread_mutex_unlock(&mutex);
+            //             return false;
+            //         } else next = current->right;
+            //     } else {
+            //         if (current->left == NULL && current->right == NULL) {
+            //             if (current == previous->left) previous->left = NULL;
+            //             else previous->right = NULL;
+            //             // if (previous) pthread_mutex_unlock(&previous->mutex);
+            //             // pthread_mutex_unlock(&mutex);
+            //             return true;
+            //         } else if (current->left == NULL) {
+            //             if (current == previous->left) previous->left = move(current->right);
+            //             else previous->right = move(current->right);
+            //             // if (previous) pthread_mutex_unlock(&previous->mutex);
+            //             // pthread_mutex_unlock(&mutex);
+            //             return true;
+            //         } else if (current->right == NULL) {
+            //             if (current == previous->left) previous->left = move(current->left);
+            //             else previous->right = move(current->left);
+            //             // if (previous) pthread_mutex_unlock(&previous->mutex);
+            //             // pthread_mutex_unlock(&mutex);
+            //             return true;
+            //         } else {
+            //             node *minPrevious = current;
+            //             node *minimum = current->left;
+            //             // pthread_mutex_lock(&minimum->mutex);
+            //             // pthread_mutex_unlock(&previous->mutex);
+            //             while (true) {
+            //                 if (minimum->left == NULL) {
+            //                     current->key = minimum->key;
+            //                     current->value = minimum->value;
+            //                     if (minPrevious == current) {
+            //                         if (minimum->right == NULL) minPrevious->right = NULL;
+            //                         else minPrevious->right = move(minimum->right);
+            //                     } else {
+            //                         if (minimum->right == NULL) minPrevious->left = NULL;
+            //                         else minPrevious->left = move(minimum->right);
+            //                         // pthread_mutex_unlock(&minPrevious->mutex);
+            //                     }
+            //                     // pthread_mutex_unlock(&current->mutex);
+            //                     // pthread_mutex_unlock(&mutex);
+            //                     return true;
+            //                 }
+            //                 // pthread_mutex_lock(&minimum->left->mutex);
+            //                 // if (minPrevious != current) {
+            //                 //     pthread_mutex_unlock(&minPrevious->mutex);
+            //                 // }
+            //                 minPrevious = minimum;
+            //                 minimum = minimum->left;
+            //             }
+            //         }
+            //     }
+            //     // pthread_mutex_lock(&next->mutex);
+            //     // if (previous) pthread_mutex_unlock(&previous->mutex);
+            //     previous = current;
+            //     current = next;
+
+            // }
             // if (isBalanced(NULL, root)) return true;
             // else {
             //     node *culprit = findCulprit(NULL, root);
@@ -357,44 +457,103 @@ class MariosBST : public ObjectInterface {
             //     else culprit = balanceTree(culprit);
             //     return true;
             // }
+            // opComplete = false;
+            // root = removeNode(root,key);
+            // pthread_mutex_unlock(&mutex);
+            // return opComplete;
+            while (current) {
+                if (key < current->key) {
+                    previous = current;
+                    current = current->left;
+                } else if (key > current->key) {
+                    previous = current;
+                    current = current->right;
+                } else {
+                    if (!current->left && !current->right) {
+                        if (previous->left == current) previous->left = nullptr;
+                        else previous->right = nullptr;
+                        current = nullptr;
+                    } else if (!current->left || !current->right) {
+                        if (current->left) previous->left = current->left;
+                        else previous->right = current->right;
+                        current = nullptr;
+                    } else {
+                        node *minPrev = nullptr;
+                        node *min = current->right;
+                        while (min->left) {
+                            minPrev = min;
+                            min = min->left;
+                        }
+                        if (minPrev) minPrev->left = min->right;
+                        else current->right = min->right;
+                        current->key = min->key;
+                        current->value = min->value;
+                    }
+                    pthread_mutex_unlock(&mutex);
+                    return true;
+                }
+            }
+            pthread_mutex_unlock(&mutex);
+            return false;
         }
 
         // Retrives the string value of a node based on its key.
         string get(int key) {
             pthread_mutex_lock(&mutex);
-            if (root == NULL) {
+            if (root == nullptr) {
                 pthread_mutex_unlock(&mutex);
                 return "No " + to_string(key);
             }
-            pthread_mutex_lock(&root->mutex);
-            pthread_mutex_unlock(&mutex);
+            // pthread_mutex_lock(&root->mutex);
+            // pthread_mutex_unlock(&mutex);
             node *current = root;
-            node *next = NULL;
-            while (true) {
-                if (key < current->key) {
-                    if (current->left == NULL) {
-                        pthread_mutex_unlock(&current->mutex);
-                        return "No " + to_string(key);
-                    } else next = current->left;
-                } else if (key > current->key) {
-                    if (current->right == NULL) {
-                        pthread_mutex_unlock(&current->mutex);
-                        return "No " + to_string(key);
-                    } else next = current->right;
-                } else {
-                    pthread_mutex_unlock(&current->mutex);
+            // node *next = NULL;
+            // while (true) {
+            //     if (key < current->key) {
+            //         if (current->left == NULL) {
+            //             // pthread_mutex_unlock(&current->mutex);
+            //             // pthread_mutex_unlock(&mutex);
+            //             return "No " + to_string(key);
+            //         } else next = current->left;
+            //     } else if (key > current->key) {
+            //         if (current->right == NULL) {
+            //             // pthread_mutex_unlock(&current->mutex);
+            //             // pthread_mutex_unlock(&mutex);
+            //             return "No " + to_string(key);
+            //         } else next = current->right;
+            //     } else {
+            //         // pthread_mutex_unlock(&current->mutex);
+            //         // pthread_mutex_unlock(&mutex);
+            //         return current->value;
+            //     }
+            //     // pthread_mutex_lock(&next->mutex);
+            //     // pthread_mutex_unlock(&current->mutex);
+            //     current = next;
+            // }
+            // return getNode(root,key);
+            while (current) {
+                if (key < current->key) current = current->left;
+                else if (key > current->key) current = current->right;
+                else {
+                    pthread_mutex_unlock(&mutex);
                     return current->value;
                 }
-                pthread_mutex_lock(&next->mutex);
-                pthread_mutex_unlock(&current->mutex);
-                current = next;
             }
+            pthread_mutex_unlock(&mutex);
+            return "No " + to_string(key);
         }
 
         void clear() {
-            if (root == NULL) return;
-            clearNodes(root);
-            root = NULL;
+            pthread_mutex_lock(&mutex);
+            // if (root == nullptr) return;
+            // // pthread_mutex_unlock(&mutex);
+            // clearNodes(root);
+            // root = nullptr;
+            if (root) {
+                clearNodes(root);
+                root = nullptr;
+            }
+            pthread_mutex_unlock(&mutex);
         }
 
         string runOp(struct opsStruct *op) { 
