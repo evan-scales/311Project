@@ -62,18 +62,39 @@ make testempty_hash
 
 ./compare gianttest_out.txt gianttest_expected.txt
 
-# Evans Approach
+# DATA STRUCTURES APPROACH
 
 The first issue was reading in the commands that the data structure will execute. The input file is read, then it is read line by line to create an 
-
 opsStruct for each command. Each opsStruct has a key, the operation to perform, the value, and result. The result variable was added to keep the general 
-
 order of the executed operations. The run method in UserInterface will read the first command for the number of threads, then while there are still 
-
 commands to execute a the specified number of threads will be created to run each operation. Each data structure has a runOperation method that will 
-
 insert, delete, or lookup depending on the command and return the result. Finally inside the thread function the result will be set in the appropriate 
-
 opsStruct. Finally to write the output it will simply go through all the opsStruct and print the result of each operation to the specified file.
 
+# PERFORMANCE & TESTING CONCLUSION
 
+To test the code, we first created a Compare function (present in Compare.cpp and UserInterface.cpp, slightly modified) to check for correctness. This was used in conjunction with Professor O'Reilly's file generator code which he provided the class with, to test output against its expected output. We also used C++'s std::chrono library to record execution time for each run. In the test that was built into the user interface, we combined these two tests (correctness and speed) to compare 10 runs of a single-threaded baseline to the multi-threaded input, so as to average the two performances and determine if our program scaled properly. As well as this, we implemented a myriad of unit tests to check both edge and standard cases as described above.    
+
+### Overall, our tests showed that the multi-threaded performance was quite an improvement compared to single-threaded. BST multi-threaded scaling was slightly worse than the hash map , but not by much:
+
+2-threaded tests ran an avg. of 50-55% faster on the hash map / 45-50% faster on the BST.
+
+4-threaded tests ran an avg. of 100-110% faster on the hash map / 100-105% faster on the BST.
+
+8-threaded tests ran an avg. of 55-60% faster on the hash map / 55-70% faster on the BST.
+
+32-threaded tests ran an avg. of 40-50% faster on the hash map / 40-70% faster on the BST.
+
+*4 threads seemed to be the sweet spot (i.e., where the increased performance wasn't yet overshadowed by overhead costs) but any more seemed to generally give diminishing returns.*
+
+### Some four-threaded timings on input sizes (very much dependent on this machine's speed, will vary):
+
+1,000 operations: 0.03s (hash map) / 0.032s (BST)
+
+10,000 operations: 0.28s (hash map) / 0.29s (BST)
+
+100,000 operations: 2.85s (hash map) / 2.91s (BST)
+
+1,000,000 operations: 28.7s (hash map) / 29.2s (BST)
+
+*With more operations, the performance scales essentially the same (linear decrease in performance). The hash map / BST disparity indicates that the hash map is roughly 2.5-10% faster as a whole - not a large difference in performance.*
