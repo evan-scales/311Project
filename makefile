@@ -57,8 +57,6 @@ testempty_hash:
 
 # bst unit tests
 
-# hashmap unit tests
-
 test1t_bst:
 	./filegenerator test 500 250 750 1
 	./userinterface test.txt test_out.txt 1 1
